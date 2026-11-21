@@ -2,21 +2,24 @@ package com.keynova.keyboard.logic
 
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import com.keynova.keyboard.model.KeyAction
+import com.keynova.keyboard.model.KeyboardLanguage
 import com.keynova.keyboard.model.KeyboardMode
 import com.keynova.keyboard.model.ShiftState
 
 class KeyboardController(
     private val inputConnectionProvider: () -> InputConnection?,
     private val editorInfoProvider: () -> EditorInfo?,
-    private val onStateChanged: () -> Unit
+    private val onStateChanged: () -> Unit,
+    private val onOpenSettings: () -> Unit = {}
 ) {
     var mode: KeyboardMode = KeyboardMode.LETTERS
+        private set
+
+    var language: KeyboardLanguage = KeyboardLanguage.FA
         private set
 
     var shiftState: ShiftState = ShiftState.OFF
@@ -34,30 +37,27 @@ class KeyboardController(
 
     fun onStartInput() {
         mode = KeyboardMode.LETTERS
+        // preserve selected language across input sessions for now
+        if (language != KeyboardLanguage.FA && language != KeyboardLanguage.EN) language = KeyboardLanguage.FA
         shiftState = ShiftState.OFF
         stopBackspaceRepeat()
         onStateChanged()
     }
 
     fun handleAction(action: KeyAction) {
-        val ic = inputConnectionProvider() ?: return
+        val ic = inputConnectionProvider()
         when (action) {
             is KeyAction.Character -> {
-                ic.commitText(action.value, 1)
-                if (mode == KeyboardMode.LETTERS && shiftState == ShiftState.ON) {
+                ic?.commitText(action.value, 1)
+                if (mode == KeyboardMode.LETTERS && language == KeyboardLanguage.EN && shiftState == ShiftState.ON) {
                     shiftState = ShiftState.OFF
                     onStateChanged()
                 }
             }
-            KeyAction.Space -> {
-                ic.commitText(" ", 1)
-            }
-            KeyAction.Enter -> {
-                handleEnter(ic)
-            }
-            KeyAction.Backspace -> {
-                deleteOnce()
-            }
+            KeyAction.Space -> ic?.commitText(" ", 1)
+            KeyAction.Zwnj -> ic?.commitText("\u200C", 1)
+            KeyAction.Enter -> if (ic != null) handleEnter(ic)
+            KeyAction.Backspace -> deleteOnce()
             KeyAction.Shift -> {
                 if (mode == KeyboardMode.LETTERS) {
                     shiftState = if (shiftState == ShiftState.OFF) ShiftState.ON else ShiftState.OFF
@@ -72,6 +72,12 @@ class KeyboardController(
                 mode = KeyboardMode.LETTERS
                 onStateChanged()
             }
+            KeyAction.SwitchLanguage -> {
+                language = if (language == KeyboardLanguage.FA) KeyboardLanguage.EN else KeyboardLanguage.FA
+                shiftState = ShiftState.OFF
+                onStateChanged()
+            }
+            KeyAction.OpenSettings -> onOpenSettings()
         }
     }
 
@@ -124,21 +130,13 @@ class KeyboardController(
             EditorInfo.IME_ACTION_SEND,
             EditorInfo.IME_ACTION_NEXT,
             EditorInfo.IME_ACTION_DONE,
-            EditorInfo.IME_ACTION_PREVIOUS -> {
-                ic.performEditorAction(action)
-            }
-            else -> {
-                if (multiLine) {
-                    ic.commitText("\n", 1)
-                } else {
-                    ic.performEditorAction(EditorInfo.IME_ACTION_DONE)
-                }
-            }
+            EditorInfo.IME_ACTION_PREVIOUS -> ic.performEditorAction(action)
+            else -> if (multiLine) ic.commitText("\n", 1) else ic.performEditorAction(EditorInfo.IME_ACTION_DONE)
         }
     }
 
     companion object {
-        private const val REPEAT_DELAY_MS = 400L
-        private const val REPEAT_INTERVAL_MS = 50L
+        private const val REPEAT_DELAY_MS = 350L
+        private const val REPEAT_INTERVAL_MS = 45L
     }
 }

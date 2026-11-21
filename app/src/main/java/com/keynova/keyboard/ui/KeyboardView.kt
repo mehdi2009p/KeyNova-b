@@ -2,7 +2,10 @@ package com.keynova.keyboard.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
@@ -24,10 +27,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             render()
         }
 
-    private val keyHeightDp = 48
-    private val horizontalGapDp = 4
-    private val verticalGapDp = 6
-    private val rowPaddingDp = 3
+    private val handler = Handler(Looper.getMainLooper())
+    private var longPressFired = false
 
     init {
         orientation = VERTICAL
@@ -41,8 +42,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     fun render() {
         removeAllViews()
         val ctrl = controller ?: return
-        val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.shiftState)
-        rows.forEachIndexed { index, rowKeys ->
+        val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.language, ctrl.shiftState)
+        rows.forEach { rowKeys ->
             addView(createRow(rowKeys))
         }
     }
@@ -51,14 +52,12 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = dp(rowPaddingDp)
-                bottomMargin = dp(rowPaddingDp)
+                topMargin = dp(3)
+                bottomMargin = dp(3)
             }
             gravity = Gravity.CENTER
         }
-        keys.forEach { key ->
-            row.addView(createKeyView(key))
-        }
+        keys.forEach { row.addView(createKeyView(it)) }
         return row
     }
 
@@ -69,43 +68,77 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 KeyAction.Space -> ""
                 else -> key.label
             }
-            if (key.action == KeyAction.Space) {
-                contentDescription = "Space"
+            contentDescription = when (key.action) {
+                KeyAction.Space -> "Space"
+                KeyAction.Backspace -> "Backspace"
+                KeyAction.Enter -> "Enter"
+                else -> key.label
             }
             setTextColor(ContextCompat.getColor(context, R.color.keynova_text))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 2) 14f else 18f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 3) 12f else 18f)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             isAllCaps = false
-            val bgRes = when {
-                key.isAccent -> R.drawable.key_bg_accent
-                key.isSpecial -> R.drawable.key_bg_special
-                else -> R.drawable.key_bg
-            }
-            setBackgroundResource(bgRes)
-            val lp = LayoutParams(0, dp(keyHeightDp), key.weight)
-            val hGap = dp(horizontalGapDp) / 2
+            setBackgroundResource(
+                when {
+                    key.isAccent -> R.drawable.key_bg_accent
+                    key.isSpecial -> R.drawable.key_bg_special
+                    else -> R.drawable.key_bg
+                }
+            )
+            val lp = LayoutParams(0, dp(48), key.weight)
+            val hGap = dp(2)
             lp.setMargins(hGap, 0, hGap, 0)
             layoutParams = lp
-            minHeight = dp(keyHeightDp)
+            minHeight = dp(48)
+            setPadding(dp(2), dp(6), dp(2), dp(6))
         }
 
         when (key.action) {
             KeyAction.Backspace -> {
                 tv.setOnTouchListener { v, event ->
                     val handled = controller?.onBackspaceTouch(event) ?: false
-                    if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                        v.isPressed = true
-                    } else if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
-                        v.isPressed = false
-                        v.performClick()
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> v.isPressed = true
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            v.isPressed = false
+                            v.performClick()
+                        }
                     }
                     handled
                 }
             }
             else -> {
-                tv.setOnClickListener {
-                    controller?.handleAction(key.action)
+                tv.setOnTouchListener { v, event ->
+                    val hasLong = key.longPressAction != null
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> {
+                            v.isPressed = true
+                            longPressFired = false
+                            if (hasLong) {
+                                handler.postDelayed({
+                                    longPressFired = true
+                                    controller?.handleAction(key.longPressAction!!)
+                                }, LONG_PRESS_MS)
+                            }
+                            true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            handler.removeCallbacksAndMessages(null)
+                            v.isPressed = false
+                            if (!longPressFired) {
+                                controller?.handleAction(key.action)
+                            }
+                            v.performClick()
+                            true
+                        }
+                        MotionEvent.ACTION_CANCEL -> {
+                            handler.removeCallbacksAndMessages(null)
+                            v.isPressed = false
+                            true
+                        }
+                        else -> false
+                    }
                 }
             }
         }
@@ -114,4 +147,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     private fun dp(value: Int): Int =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
+
+    companion object {
+        private const val LONG_PRESS_MS = 350L
+    }
 }

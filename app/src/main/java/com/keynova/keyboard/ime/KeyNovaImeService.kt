@@ -1,10 +1,12 @@
 package com.keynova.keyboard.ime
 
+import android.content.Intent
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import com.keynova.keyboard.logic.KeyboardController
 import com.keynova.keyboard.ui.KeyboardView
+import com.keynova.keyboard.ui.SettingsActivity
 
 class KeyNovaImeService : InputMethodService() {
 
@@ -16,7 +18,13 @@ class KeyNovaImeService : InputMethodService() {
         controller = KeyboardController(
             inputConnectionProvider = { currentInputConnection },
             editorInfoProvider = { currentInputEditorInfo },
-            onStateChanged = { keyboardView?.render() }
+            onStateChanged = { keyboardView?.render() },
+            onOpenSettings = {
+                val intent = Intent(this, SettingsActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+            }
         )
     }
 

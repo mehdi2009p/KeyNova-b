@@ -1,21 +1,22 @@
 ﻿<resources>
     <string name="app_name">KeyNova</string>
-    <string name="keyboard_name">KeyNova Keyboard</string>
+    <string name="keyboard_name">کیبورد KeyNova</string>
+    <string name="subtype_fa">فارسی</string>
     <string name="subtype_en_us">English (US)</string>
 
-    <string name="settings_title">KeyNova Keyboard</string>
-    <string name="settings_intro">A lightweight, functional keyboard for everyday typing.</string>
-    <string name="enable_keyboard_title">Step 1: Enable KeyNova</string>
-    <string name="enable_keyboard_desc">Turn on KeyNova in your device\'s keyboard/input method settings.</string>
-    <string name="enable_keyboard_button">Open Keyboard Settings</string>
-    <string name="select_keyboard_title">Step 2: Select KeyNova</string>
-    <string name="select_keyboard_desc">Choose KeyNova as your active keyboard.</string>
-    <string name="select_keyboard_button">Choose Input Method</string>
-    <string name="test_keyboard_title">Step 3: Try it</string>
-    <string name="test_keyboard_desc">Tap below to test typing with KeyNova.</string>
-    <string name="test_keyboard_hint">Type here to test KeyNova…</string>
-    <string name="status_enabled">KeyNova is enabled.</string>
-    <string name="status_not_enabled">KeyNova is not enabled yet.</string>
-    <string name="status_selected">KeyNova is your current keyboard.</string>
-    <string name="status_not_selected">KeyNova is enabled but not selected.</string>
+    <string name="settings_title">KeyNova</string>
+    <string name="settings_intro">کیبورد فارسی‌محور، سبک و قابل اعتماد برای تایپ روزمره.</string>
+    <string name="enable_keyboard_title">مرحله ۱: فعال‌سازی KeyNova</string>
+    <string name="enable_keyboard_desc">در تنظیمات روش‌های ورودی، KeyNova را فعال کنید.</string>
+    <string name="enable_keyboard_button">باز کردن تنظیمات کیبورد</string>
+    <string name="select_keyboard_title">مرحله ۲: انتخاب KeyNova</string>
+    <string name="select_keyboard_desc">KeyNova را به‌عنوان کیبورد فعال انتخاب کنید.</string>
+    <string name="select_keyboard_button">انتخاب روش ورودی</string>
+    <string name="test_keyboard_title">مرحله ۳: تست تایپ</string>
+    <string name="test_keyboard_desc">در کادر زیر تایپ کنید و عملکرد کیبورد را بررسی کنید.</string>
+    <string name="test_keyboard_hint">اینجا تایپ کنید...</string>
+    <string name="status_enabled">KeyNova فعال است.</string>
+    <string name="status_not_enabled">KeyNova هنوز فعال نشده است.</string>
+    <string name="status_selected">KeyNova کیبورد فعلی شماست.</string>
+    <string name="status_not_selected">KeyNova فعال است اما انتخاب نشده است.</string>
 </resources>

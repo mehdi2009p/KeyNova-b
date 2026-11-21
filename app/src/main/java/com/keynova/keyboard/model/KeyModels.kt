@@ -6,8 +6,11 @@ sealed interface KeyAction {
     data object Backspace : KeyAction
     data object Enter : KeyAction
     data object Space : KeyAction
-    data object ModeLetters : KeyAction
     data object ModeSymbols : KeyAction
+    data object ModeLetters : KeyAction
+    data object SwitchLanguage : KeyAction
+    data object Zwnj : KeyAction
+    data object OpenSettings : KeyAction
 }
 
 data class Key(
@@ -16,12 +19,18 @@ data class Key(
     val weight: Float = 1f,
     val isSpecial: Boolean = false,
     val isAccent: Boolean = false,
-    val outputOverride: String? = null
+    val longPressLabel: String? = null,
+    val longPressAction: KeyAction? = null
 )
 
 enum class KeyboardMode {
     LETTERS,
     SYMBOLS
+}
+
+enum class KeyboardLanguage {
+    FA,
+    EN
 }
 
 enum class ShiftState {

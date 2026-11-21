@@ -3,6 +3,10 @@
     android:settingsActivity="com.keynova.keyboard.ui.SettingsActivity"
     android:supportsSwitchingToNextInputMethod="true">
     <subtype
+        android:imeSubtypeLocale="fa_IR"
+        android:imeSubtypeMode="keyboard"
+        android:label="@string/subtype_fa" />
+    <subtype
         android:imeSubtypeLocale="en_US"
         android:imeSubtypeMode="keyboard"
         android:isAsciiCapable="true"
