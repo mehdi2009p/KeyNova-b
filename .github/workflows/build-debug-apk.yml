@@ -34,8 +34,9 @@ jobs:
 
       - name: Build debug APK
         run: |
+          set -o pipefail
           chmod +x gradlew
-          ./gradlew :app:assembleDebug --console=plain --stacktrace
+          ./gradlew :app:assembleDebug --console=plain --stacktrace 2>&1 | tee build.log
 
       - name: Upload debug APK
         if: success()
@@ -45,12 +46,13 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
-      - name: Upload build reports
+      - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-reports
+          name: build-logs
           path: |
+            build.log
             **/build/reports/**
             **/build/outputs/logs/**
           if-no-files-found: warn
