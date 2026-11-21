@@ -1,0 +1,15 @@
+﻿<resources>
+    <color name="keynova_background">#1E1F22</color>
+    <color name="keynova_key_bg">#2B2D31</color>
+    <color name="keynova_key_bg_pressed">#3A3D42</color>
+    <color name="keynova_key_special_bg">#24262A</color>
+    <color name="keynova_key_special_pressed">#33363B</color>
+    <color name="keynova_accent">#D4A017</color>
+    <color name="keynova_accent_pressed">#B8890F</color>
+    <color name="keynova_text">#FFFFFF</color>
+    <color name="keynova_text_secondary">#D0D0D0</color>
+    <color name="keynova_status_ok">#7CB342</color>
+    <color name="keynova_status_warn">#E0A000</color>
+
+    <color name="ic_launcher_background">#1E1F22</color>
+</resources>

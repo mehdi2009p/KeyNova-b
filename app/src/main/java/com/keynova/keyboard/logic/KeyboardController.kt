@@ -1,0 +1,144 @@
+package com.keynova.keyboard.logic
+
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+import com.keynova.keyboard.model.KeyAction
+import com.keynova.keyboard.model.KeyboardMode
+import com.keynova.keyboard.model.ShiftState
+
+class KeyboardController(
+    private val inputConnectionProvider: () -> InputConnection?,
+    private val editorInfoProvider: () -> EditorInfo?,
+    private val onStateChanged: () -> Unit
+) {
+    var mode: KeyboardMode = KeyboardMode.LETTERS
+        private set
+
+    var shiftState: ShiftState = ShiftState.OFF
+        private set
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var backspaceRepeating = false
+    private val backspaceRunnable = object : Runnable {
+        override fun run() {
+            if (!backspaceRepeating) return
+            deleteOnce()
+            handler.postDelayed(this, REPEAT_INTERVAL_MS)
+        }
+    }
+
+    fun onStartInput() {
+        mode = KeyboardMode.LETTERS
+        shiftState = ShiftState.OFF
+        stopBackspaceRepeat()
+        onStateChanged()
+    }
+
+    fun handleAction(action: KeyAction) {
+        val ic = inputConnectionProvider() ?: return
+        when (action) {
+            is KeyAction.Character -> {
+                ic.commitText(action.value, 1)
+                if (mode == KeyboardMode.LETTERS && shiftState == ShiftState.ON) {
+                    shiftState = ShiftState.OFF
+                    onStateChanged()
+                }
+            }
+            KeyAction.Space -> {
+                ic.commitText(" ", 1)
+            }
+            KeyAction.Enter -> {
+                handleEnter(ic)
+            }
+            KeyAction.Backspace -> {
+                deleteOnce()
+            }
+            KeyAction.Shift -> {
+                if (mode == KeyboardMode.LETTERS) {
+                    shiftState = if (shiftState == ShiftState.OFF) ShiftState.ON else ShiftState.OFF
+                    onStateChanged()
+                }
+            }
+            KeyAction.ModeSymbols -> {
+                mode = KeyboardMode.SYMBOLS
+                onStateChanged()
+            }
+            KeyAction.ModeLetters -> {
+                mode = KeyboardMode.LETTERS
+                onStateChanged()
+            }
+        }
+    }
+
+    fun onBackspaceTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                handleAction(KeyAction.Backspace)
+                backspaceRepeating = true
+                handler.postDelayed(backspaceRunnable, REPEAT_DELAY_MS)
+                return true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                stopBackspaceRepeat()
+                return true
+            }
+        }
+        return false
+    }
+
+    fun stopBackspaceRepeat() {
+        backspaceRepeating = false
+        handler.removeCallbacks(backspaceRunnable)
+    }
+
+    private fun deleteOnce() {
+        val ic = inputConnectionProvider() ?: return
+        val selected = ic.getSelectedText(0)
+        if (!selected.isNullOrEmpty()) {
+            ic.commitText("", 1)
+        } else {
+            ic.deleteSurroundingText(1, 0)
+        }
+    }
+
+    private fun handleEnter(ic: InputConnection) {
+        val ei = editorInfoProvider()
+        val action = ei?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: EditorInfo.IME_ACTION_NONE
+        val noEnterAction = (ei?.imeOptions?.and(EditorInfo.IME_FLAG_NO_ENTER_ACTION) ?: 0) != 0
+        val inputType = ei?.inputType ?: 0
+        val multiLine = (inputType and EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE) != 0
+
+        if (multiLine && (action == EditorInfo.IME_ACTION_NONE || noEnterAction)) {
+            ic.commitText("\n", 1)
+            return
+        }
+
+        when (action) {
+            EditorInfo.IME_ACTION_GO,
+            EditorInfo.IME_ACTION_SEARCH,
+            EditorInfo.IME_ACTION_SEND,
+            EditorInfo.IME_ACTION_NEXT,
+            EditorInfo.IME_ACTION_DONE,
+            EditorInfo.IME_ACTION_PREVIOUS -> {
+                ic.performEditorAction(action)
+            }
+            else -> {
+                if (multiLine) {
+                    ic.commitText("\n", 1)
+                } else {
+                    ic.performEditorAction(EditorInfo.IME_ACTION_DONE)
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val REPEAT_DELAY_MS = 400L
+        private const val REPEAT_INTERVAL_MS = 50L
+    }
+}
