@@ -44,10 +44,10 @@ object ThemeManager {
     )
 
     fun wallpaperThemes(): List<KeyboardTheme> = listOf(
+        t("wp_galaxy", "کهکشان نئونی", ThemeCategory.WALLPAPER, 0xCC120A24.toInt(), 0xCC2A1E45.toInt(), 0xCC3A2A60.toInt(), 0xCC1E1736.toInt(), 0xCC2E2450.toInt(), 0xFFD59CFF.toInt(), 0xFFB87AEF.toInt(), 0xFFF8F3FF.toInt(), 0xFFDCCCFF.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_galaxy),
         t("wp_ocean", "اقیانوس", ThemeCategory.WALLPAPER, 0xCC0A2236.toInt(), 0xCC1C3A57.toInt(), 0xCC2A5275.toInt(), 0xCC152D44.toInt(), 0xCC234661.toInt(), 0xFF58C9FF.toInt(), 0xFF3AAFE6.toInt(), 0xFFFFFFFF.toInt(), 0xFFD4E8F5.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_ocean),
-        t("wp_sunset", "غروب", ThemeCategory.WALLPAPER, 0xCC2A1420.toInt(), 0xCC4A2438.toInt(), 0xCC63324C.toInt(), 0xCC3A1C2D.toInt(), 0xCC552A40.toInt(), 0xFFFFB36B.toInt(), 0xFFE89243.toInt(), 0xFFFFF5EE.toInt(), 0xFFF0D2C0.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_sunset),
-        t("wp_forest", "جنگل", ThemeCategory.WALLPAPER, 0xCC101F16.toInt(), 0xCC22382A.toInt(), 0xCC30503A.toInt(), 0xCC1A2C21.toInt(), 0xCC294232.toInt(), 0xFF8BE07A.toInt(), 0xFF6EC75D.toInt(), 0xFFF1FFF0.toInt(), 0xFFCFE0CD.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_forest),
-        t("wp_galaxy", "کهکشان", ThemeCategory.WALLPAPER, 0xCC130D24.toInt(), 0xCC271E45.toInt(), 0xCC362A5D.toInt(), 0xCC1E1736.toInt(), 0xCC2E2450.toInt(), 0xFFD59CFF.toInt(), 0xFFB87AEF.toInt(), 0xFFF8F3FF.toInt(), 0xFFDCCCFF.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_galaxy),
+        t("wp_sunset", "غروب کوهستان", ThemeCategory.WALLPAPER, 0xCC2A1420.toInt(), 0xCC4A2438.toInt(), 0xCC63324C.toInt(), 0xCC3A1C2D.toInt(), 0xCC552A40.toInt(), 0xFFFFB36B.toInt(), 0xFFE89243.toInt(), 0xFFFFF5EE.toInt(), 0xFFF0D2C0.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_sunset),
+        t("wp_forest", "جنگل مه‌آلود", ThemeCategory.WALLPAPER, 0xCC101F16.toInt(), 0xCC22382A.toInt(), 0xCC30503A.toInt(), 0xCC1A2C21.toInt(), 0xCC294232.toInt(), 0xFF8BE07A.toInt(), 0xFF6EC75D.toInt(), 0xFFF1FFF0.toInt(), 0xFFCFE0CD.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_forest),
     )
 
     private fun t(id: String, name: String, cat: ThemeCategory, bg: Int, k: Int, kp: Int, ks: Int, ksp: Int, a: Int, ap: Int, tx: Int, ts: Int, kd: Int, ksd: Int, kad: Int, wp: Int? = null) =

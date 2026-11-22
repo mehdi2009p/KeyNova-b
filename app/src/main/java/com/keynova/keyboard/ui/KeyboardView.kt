@@ -48,6 +48,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private val suggestions = SuggestionEngine(context)
     private var suggestionBar: LinearLayout? = null
     private var clipboardPanel: LinearLayout? = null
+    private var clipboardScroll: View? = null
     private var keyPreview: PopupWindow? = null
     @Volatile private var vibrationEnabled = prefs.vibrationEnabled
     @Volatile private var soundEnabled = prefs.soundEnabled
@@ -176,6 +177,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         items.take(20).forEach { item ->
             panel.addView(makeChip(item.replace("\n", " ").take(28), true) {
                 controller?.currentInputConnection()?.commitText(item, 1)
+                clipboardScroll?.visibility = View.GONE
+                updateSuggestions()
             })
         }
     }
@@ -233,17 +236,27 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         }
         clipScroll.addView(clipRow)
         clipboardPanel = clipRow
-        wrap.tag = clipScroll
+        clipboardScroll = clipScroll
         wrap.addView(clipScroll)
         refreshClipboard()
         return wrap
     }
 
     private fun toggleClipboard() {
-        val wrap = suggestionBar?.parent?.parent?.parent as? LinearLayout ?: return
-        val clipScroll = wrap.tag as? View ?: return
-        clipScroll.visibility = if (clipScroll.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-        if (clipScroll.visibility == View.VISIBLE) refreshClipboard()
+        val clipScroll = clipboardScroll ?: return
+        val visible = clipScroll.visibility == View.VISIBLE
+        if (visible) {
+            clipScroll.visibility = View.GONE
+        } else {
+            // best-effort sync current clipboard
+            try {
+                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.trim().orEmpty()
+                if (text.isNotBlank()) prefs.addClipboardItem(text)
+            } catch (_: Exception) {}
+            refreshClipboard()
+            clipScroll.visibility = View.VISIBLE
+        }
     }
 
     private fun makeChip(text: String, clickable: Boolean, onClick: () -> Unit): View {
@@ -271,11 +284,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val tokens = Regex("[\\p{L}\\u200C']+").findAll(before).map { it.value }.toList()
         if (afterSpace && tokens.isNotEmpty()) suggestions.learn(tokens.takeLast(2).joinToString(" "))
 
-        val list = if (suggestionsEnabled && ctrl.mode == KeyboardMode.LETTERS) {
-            if (current.isEmpty() && afterSpace) {
-                val prev = tokens.lastOrNull().orEmpty()
-                suggestions.suggestNext(ctrl.language, prev)
-            } else suggestions.suggest(current, ctrl.language, afterSpace)
+        val list = if (suggestionsEnabled && ctrl.mode == KeyboardMode.LETTERS && current.isNotEmpty()) {
+            suggestions.suggest(current, ctrl.language, afterSpace)
         } else emptyList()
 
         for (i in 0 until bar.childCount) {

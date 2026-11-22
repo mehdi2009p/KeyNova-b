@@ -277,4 +277,95 @@ green
 red
 pink
 orange
-yellow
+yellowhello
+thanks
+please
+sorry
+yes
+no
+okay
+great
+good
+bad
+awesome
+perfect
+today
+tomorrow
+yesterday
+now
+later
+soon
+always
+never
+sometimes
+morning
+afternoon
+evening
+night
+weekend
+monday
+friday
+home
+work
+school
+office
+store
+hospital
+park
+family
+friend
+mom
+dad
+brother
+sister
+team
+teacher
+phone
+computer
+internet
+app
+message
+photo
+video
+music
+file
+send
+see
+read
+write
+call
+wait
+start
+stop
+continue
+finish
+happy
+sad
+tired
+busy
+ready
+sure
+maybe
+really
+thank you
+see you
+good luck
+take care
+no problem
+of course
+sounds good
+can you
+i want
+i need
+i think
+let me
+please send
+on my way
+how are you
+what is up
+see you later
+talk soon
+on it
+got it
+be right back
+sounds great
