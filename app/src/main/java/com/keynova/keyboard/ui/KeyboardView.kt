@@ -48,7 +48,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private val suggestions = SuggestionEngine(context)
     private var suggestionBar: LinearLayout? = null
     private var clipboardPanel: LinearLayout? = null
-    private var clipboardScroll: View? = null
+    private var clipboardView: View? = null
+    private var keyboardContent: View? = null
     private var keyPreview: PopupWindow? = null
     @Volatile private var vibrationEnabled = prefs.vibrationEnabled
     @Volatile private var soundEnabled = prefs.soundEnabled
@@ -142,27 +143,29 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             orientation = VERTICAL
             layoutParams = android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM)
         }
+        keyboardContent = content
         content.addView(createTopBar())
         val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.language, ctrl.shiftState).toMutableList()
         if (numberRowEnabled && ctrl.mode == KeyboardMode.LETTERS) rows.add(0, numberRow(ctrl.language))
         rows.forEach { rowKeys -> content.addView(createRow(rowKeys)) }
 
+        val root = android.widget.FrameLayout(context).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            clipChildren = false
+        }
         if (theme.wallpaperDrawable != null) {
-            val root = android.widget.FrameLayout(context).apply {
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-                clipChildren = false
-            }
             val wp = ImageView(context).apply {
                 setImageResource(theme.wallpaperDrawable!!)
                 scaleType = ImageView.ScaleType.CENTER_CROP
                 alpha = 0.65f
             }
             root.addView(wp, android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-            root.addView(content)
-            addView(root)
-        } else {
-            addView(content)
         }
+        root.addView(content)
+        val clip = createClipboardView()
+        clipboardView = clip
+        root.addView(clip)
+        addView(root)
         updateSuggestions()
     }
 
@@ -171,23 +174,19 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         panel.removeAllViews()
         val items = prefs.clipboardHistory
         if (items.isEmpty()) {
-            panel.addView(makeChip("کلیپ‌بورد خالی است", false) {})
+            panel.addView(makeClipboardRow("کلیپ‌بورد خالی است") {})
             return
         }
         items.take(20).forEach { item ->
-            panel.addView(makeChip(item.replace("\n", " ").take(28), true) {
+            panel.addView(makeClipboardRow(item) {
                 controller?.currentInputConnection()?.commitText(item, 1)
-                clipboardScroll?.visibility = View.GONE
+                hideClipboard()
                 updateSuggestions()
             })
         }
     }
 
     private fun createTopBar(): View {
-        val wrap = LinearLayout(context).apply {
-            orientation = VERTICAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        }
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -199,7 +198,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             gravity = Gravity.CENTER
             setTextColor(theme.text)
             layoutParams = LayoutParams(dp(44), LayoutParams.MATCH_PARENT)
-            setOnClickListener { toggleClipboard() }
+            setOnClickListener { showClipboard() }
         }
         val sugRow = LinearLayout(context).apply {
             orientation = HORIZONTAL
@@ -222,56 +221,91 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         suggestionBar = sugRow
         row.addView(clipBtn)
         row.addView(sugRow)
-        wrap.addView(row)
+        return row
+    }
 
-        val clipScroll = HorizontalScrollView(context).apply {
-            isHorizontalScrollBarEnabled = false
+    private fun createClipboardView(): View {
+        val panel = LinearLayout(context).apply {
+            orientation = VERTICAL
             visibility = View.GONE
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(42))
+            setBackgroundColor(theme.background)
+            layoutParams = android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         }
-        val clipRow = LinearLayout(context).apply {
+
+        val header = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(44))
+            setPadding(dp(8), 0, dp(8), 0)
         }
-        clipScroll.addView(clipRow)
-        clipboardPanel = clipRow
-        clipboardScroll = clipScroll
-        wrap.addView(clipScroll)
-        refreshClipboard()
-        return wrap
+        val back = TextView(context).apply {
+            text = "بازگشت به کیبورد"
+            setTextColor(theme.accent)
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+            setOnClickListener { hideClipboard() }
+        }
+        val title = TextView(context).apply {
+            text = "کلیپ‌بورد"
+            setTextColor(theme.text)
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+        }
+        header.addView(back)
+        header.addView(title)
+
+        val scroll = android.widget.ScrollView(context).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f)
+            isFillViewport = true
+        }
+        val list = LinearLayout(context).apply {
+            orientation = VERTICAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            setPadding(dp(8), dp(4), dp(8), dp(8))
+        }
+        scroll.addView(list)
+        clipboardPanel = list
+
+        panel.addView(header)
+        panel.addView(scroll)
+        return panel
     }
 
-    private fun toggleClipboard() {
-        val clipScroll = clipboardScroll ?: return
-        val visible = clipScroll.visibility == View.VISIBLE
-        if (visible) {
-            clipScroll.visibility = View.GONE
-        } else {
-            // best-effort sync current clipboard
-            try {
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.trim().orEmpty()
-                if (text.isNotBlank()) prefs.addClipboardItem(text)
-            } catch (_: Exception) {}
-            refreshClipboard()
-            clipScroll.visibility = View.VISIBLE
-        }
-    }
-
-    private fun makeChip(text: String, clickable: Boolean, onClick: () -> Unit): View {
+    private fun makeClipboardRow(text: String, onClick: () -> Unit): View {
         return TextView(context).apply {
-            this.text = text
+            this.text = text.replace("\n", " ").trim()
             setTextColor(theme.text)
             textSize = 14f
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.END
-            setPadding(dp(10), dp(6), dp(10), dp(6))
+            setPadding(dp(12), dp(12), dp(12), dp(12))
             setBackgroundResource(theme.keySpecialDrawable)
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply { setMargins(dp(3), dp(2), dp(3), dp(2)) }
-            if (clickable) setOnClickListener { onClick() }
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                setMargins(0, dp(4), 0, dp(4))
+            }
+            if (text != "کلیپ‌بورد خالی است") setOnClickListener { onClick() } else alpha = 0.7f
         }
     }
+
+    private fun showClipboard() {
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.trim().orEmpty()
+            if (text.isNotBlank()) prefs.addClipboardItem(text)
+        } catch (_: Exception) {}
+        refreshClipboard()
+        keyboardContent?.visibility = View.GONE
+        clipboardView?.visibility = View.VISIBLE
+    }
+
+    private fun hideClipboard() {
+        clipboardView?.visibility = View.GONE
+        keyboardContent?.visibility = View.VISIBLE
+    }
+
+    // clipboard now uses makeClipboardRow in a full-screen panel
 
     fun updateSuggestions() {
         val bar = suggestionBar ?: return
