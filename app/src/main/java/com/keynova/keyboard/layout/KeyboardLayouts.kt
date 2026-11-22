@@ -33,13 +33,12 @@ object KeyboardLayouts {
             Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true)
         )
         val row4 = listOf(
-            Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
-            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
-            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
-            Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 4.4f),
-            Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true)
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
+            Key(label = "فاصله", action = KeyAction.Space, weight = 3.6f),
+            Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
+            Key(label = "↵", action = KeyAction.Enter, weight = 2.0f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -59,13 +58,12 @@ object KeyboardLayouts {
             add(Key(label = "⌫", action = KeyAction.Backspace, weight = 1.5f, isSpecial = true))
         }
         val row4 = listOf(
-            Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = englishDotPopup()),
-            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f),
-            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
-            Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
-            Key(label = "space", action = KeyAction.Space, weight = 3.2f),
-            Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true)
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
+            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f),
+            Key(label = "space", action = KeyAction.Space, weight = 3.6f),
+            Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = englishDotPopup()),
+            Key(label = "↵", action = KeyAction.Enter, weight = 2.0f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -76,15 +74,11 @@ object KeyboardLayouts {
         val comma = if (fa) "،" else ","
         val space = if (fa) "فاصله" else "space"
 
-        val row1 = if (!secondary) {
-            listOf("۱","۲","۳","۴","۵","۶","۷","۸","۹","۰").map { Key(it, KeyAction.Character(it)) }
-        } else {
-            listOf("[", "]", "{", "}", "#", "%", "^", "*", "+", "=").map { Key(it, KeyAction.Character(it)) }
-        }
+        val row1 = listOf("1","2","3","4","5","6","7","8","9","0").map { Key(it, KeyAction.Character(it)) }
         val row2 = if (!secondary) {
             listOf("@", "#", "$", "_", "&", "-", "+", "(", ")", "/").map { Key(it, KeyAction.Character(it)) }
         } else {
-            listOf("_", "\\", "|", "~", "<", ">", "€", "£", "¥", "•").map { Key(it, KeyAction.Character(it)) }
+            listOf("[", "]", "{", "}", "%", "^", "*", "+", "=", "\\").map { Key(it, KeyAction.Character(it)) }
         }
         val row3 = if (!secondary) {
             listOf(
@@ -100,25 +94,32 @@ object KeyboardLayouts {
         } else {
             listOf(
                 Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true),
-                Key(".", KeyAction.Character(".")),
-                Key(",", KeyAction.Character(",")),
-                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?")),
-                Key("!", KeyAction.Character("!")),
-                Key("'", KeyAction.Character("'")),
-                Key("\"", KeyAction.Character("\"")),
-                if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";"))
+                Key("_", KeyAction.Character("_")),
+                Key("|", KeyAction.Character("|")),
+                Key("~", KeyAction.Character("~")),
+                Key("<", KeyAction.Character("<")),
+                Key(">", KeyAction.Character(">")),
+                Key("€", KeyAction.Character("€")),
+                Key("•", KeyAction.Character("•"))
             )
         }
         val row4 = listOf(
-            Key(".", KeyAction.Character("."), 1.0f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
-            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
-            Key("⌨", KeyAction.ModeNumpad, 1.0f, isSpecial = true),
             Key("#+=", KeyAction.ModeSymbols2, 1.0f, isSpecial = true),
-            Key(if (fa) "۱۲۳؟" else "?123", KeyAction.ModeSymbols, 1.0f, isSpecial = true),
-            Key(space, KeyAction.Space, 3.2f),
-            Key("↵", KeyAction.Enter, 1.2f, isSpecial = true, isAccent = true)
+            Key("⌨", KeyAction.ModeNumpad, 1.0f, isSpecial = true),
+            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
+            Key(space, KeyAction.Space, 3.6f),
+            Key(".", KeyAction.Character("."), 1.0f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
+            Key("↵", KeyAction.Enter, 2.0f, isSpecial = true, isAccent = true)
         )
-        return listOf(row1, row2, row3, row4)
+        // Keep abc access: put on symbols2 row3 end? Better add to row4? requested layout fixed; use long-press on #+=? no.
+        // Add ABC as first in row4 when in symbols? but user specified exact order. I'll replace #+= toggle behavior via ModeSymbols button? 
+        // Simpler: make #+= key label show ABC when secondary? No, user asked for #+= button.
+        // Use row3 last as ABC in both modes by adjusting count.
+        return listOf(row1, row2, row3WithAbc(row3, abcLabel), row4)
+    }
+
+    private fun row3WithAbc(row3: List<Key>, abcLabel: String): List<Key> {
+        return row3 + Key(abcLabel, KeyAction.ModeLetters, 1.1f, isSpecial = true)
     }
 
     private fun numpadRows(language: KeyboardLanguage): List<List<Key>> {
