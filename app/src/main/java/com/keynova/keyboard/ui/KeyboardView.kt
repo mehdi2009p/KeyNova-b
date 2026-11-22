@@ -37,7 +37,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         orientation = VERTICAL
         setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_background))
         val pad = dp(4)
-        setPadding(pad, dp(6), pad, dp(8))
+        setPadding(pad, dp(8), pad, dp(36))
         isClickable = true
         isFocusable = false
     }
@@ -54,8 +54,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = dp(3)
-                bottomMargin = dp(3)
+                topMargin = dp(4)
+                bottomMargin = dp(4)
             }
             gravity = Gravity.CENTER
         }
@@ -64,7 +64,22 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun createKeyView(key: Key): TextView {
+    private fun createKeyView(key: Key): View {
+        val container = android.widget.FrameLayout(context).apply {
+            val lp = LayoutParams(0, dp(56), key.weight)
+            val hGap = dp(2)
+            lp.setMargins(hGap, 0, hGap, 0)
+            layoutParams = lp
+            minimumHeight = dp(56)
+            setBackgroundResource(
+                when {
+                    key.isAccent -> R.drawable.key_bg_accent
+                    key.isSpecial -> R.drawable.key_bg_special
+                    else -> R.drawable.key_bg
+                }
+            )
+        }
+
         val tv = TextView(context).apply {
             text = when (key.action) {
                 KeyAction.Space -> if ((controller?.language?.name ?: "FA") == "FA") "فاصله" else "space"
@@ -77,55 +92,61 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 else -> key.label
             }
             setTextColor(ContextCompat.getColor(context, R.color.keynova_text))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 3) 11f else 18f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 3) 12f else 20f)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             isAllCaps = false
-            setBackgroundResource(
-                when {
-                    key.isAccent -> R.drawable.key_bg_accent
-                    key.isSpecial -> R.drawable.key_bg_special
-                    else -> R.drawable.key_bg
-                }
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
             )
-            val lp = LayoutParams(0, dp(48), key.weight)
-            val hGap = dp(2)
-            lp.setMargins(hGap, 0, hGap, 0)
-            layoutParams = lp
-            minHeight = dp(48)
-            setPadding(dp(2), dp(6), dp(2), dp(6))
+            setPadding(dp(4), dp(8), dp(4), dp(8))
+        }
+        container.addView(tv)
+
+        if (key.longPressLabel != null && key.popupActions.isEmpty()) {
+            val hint = TextView(context).apply {
+                text = key.longPressLabel
+                setTextColor(ContextCompat.getColor(context, R.color.keynova_text_secondary))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+                typeface = Typeface.DEFAULT_BOLD
+                layoutParams = android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START
+                ).apply { setMargins(dp(4), dp(2), 0, 0) }
+            }
+            container.addView(hint)
         }
 
         when (key.action) {
-            KeyAction.Backspace -> {
-                tv.setOnTouchListener { v, event ->
-                    val handled = controller?.onBackspaceTouch(event) ?: false
-                    when (event.actionMasked) {
-                        MotionEvent.ACTION_DOWN -> v.isPressed = true
-                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            v.isPressed = false
-                            v.performClick()
-                        }
-                    }
-                    handled
-                }
-            }
-            KeyAction.Space -> bindSpaceTouch(tv)
-            else -> bindKeyTouch(tv, key)
+            KeyAction.Backspace -> bindBackspace(container)
+            KeyAction.Space -> bindSpaceTouch(container)
+            else -> bindKeyTouch(container, key)
         }
-        return tv
+        return container
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun bindSpaceTouch(tv: TextView) {
+    private fun bindBackspace(v: View) {
+        v.setOnTouchListener { view, event ->
+            val handled = controller?.onBackspaceTouch(event) ?: false
+            if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                view.performClick()
+            }
+            handled
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun bindSpaceTouch(v: View) {
         var downX = 0f
         var switched = false
-        tv.setOnTouchListener { v, event ->
+        v.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.x
                     switched = false
-                    v.isPressed = true
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -133,36 +154,30 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     if (!switched && abs(dx) > dp(36)) {
                         switched = true
                         controller?.handleAction(KeyAction.SwitchLanguage)
-                        v.isPressed = false
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    v.isPressed = false
                     if (!switched) controller?.handleAction(KeyAction.Space)
-                    v.performClick()
+                    view.performClick()
                     true
                 }
-                MotionEvent.ACTION_CANCEL -> {
-                    v.isPressed = false
-                    true
-                }
+                MotionEvent.ACTION_CANCEL -> true
                 else -> false
             }
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun bindKeyTouch(tv: TextView, key: Key) {
-        tv.setOnTouchListener { v, event ->
+    private fun bindKeyTouch(v: View, key: Key) {
+        v.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    v.isPressed = true
                     longPressFired = false
                     if (key.popupActions.isNotEmpty()) {
                         handler.postDelayed({
                             longPressFired = true
-                            showPopup(v, key.popupActions)
+                            showPopup(view, key.popupActions)
                         }, LONG_PRESS_MS)
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
@@ -174,14 +189,12 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 }
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacksAndMessages(null)
-                    v.isPressed = false
                     if (!longPressFired) controller?.handleAction(key.action)
-                    v.performClick()
+                    view.performClick()
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     handler.removeCallbacksAndMessages(null)
-                    v.isPressed = false
                     dismissPopup()
                     true
                 }

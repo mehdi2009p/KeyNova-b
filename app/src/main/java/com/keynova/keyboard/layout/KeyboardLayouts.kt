@@ -32,11 +32,12 @@ object KeyboardLayouts {
         )
         val row4 = listOf(
             Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true),
-            Key(label = "؟۱۲۳", action = KeyAction.ModeSymbols, weight = 1.1f, isSpecial = true),
-            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
-            Key(label = ".", action = KeyAction.Character("."), weight = 0.9f, popupActions = persianDotPopup()),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 3.0f),
-            Key(label = "،", action = KeyAction.Character("،"), weight = 0.9f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj)
+            Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.05f, isSpecial = true),
+            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = ".", action = KeyAction.Character("."), weight = 0.85f, popupActions = persianDotPopup()),
+            Key(label = "فاصله", action = KeyAction.Space, weight = 2.9f),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 0.85f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -57,11 +58,12 @@ object KeyboardLayouts {
         }
         val row4 = listOf(
             Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true),
-            Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.1f, isSpecial = true),
-            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
-            Key(label = ".", action = KeyAction.Character("."), weight = 0.9f, popupActions = englishDotPopup()),
-            Key(label = "space", action = KeyAction.Space, weight = 3.0f),
-            Key(label = ",", action = KeyAction.Character(","), weight = 0.9f)
+            Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.05f, isSpecial = true),
+            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = ".", action = KeyAction.Character("."), weight = 0.85f, popupActions = englishDotPopup()),
+            Key(label = "space", action = KeyAction.Space, weight = 2.9f),
+            Key(label = ",", action = KeyAction.Character(","), weight = 0.85f),
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -73,7 +75,7 @@ object KeyboardLayouts {
         val space = if (fa) "فاصله" else "space"
 
         val row1 = if (!secondary) {
-            "1234567890".map { Key(it.toString(), KeyAction.Character(it.toString())) }
+            listOf("۰","۹","۸","۷","۶","۵","۴","۳","۲","۱").map { Key(it, KeyAction.Character(it)) }
         } else {
             listOf("[", "]", "{", "}", "#", "%", "^", "*", "+", "=").map { Key(it, KeyAction.Character(it)) }
         }
@@ -91,8 +93,7 @@ object KeyboardLayouts {
                 Key(":", KeyAction.Character(":")),
                 if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";")),
                 Key("!", KeyAction.Character("!")),
-                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?")),
-                Key("⌨", KeyAction.ModeNumpad, 1.2f, isSpecial = true)
+                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?"))
             )
         } else {
             listOf(
@@ -103,17 +104,17 @@ object KeyboardLayouts {
                 Key("!", KeyAction.Character("!")),
                 Key("'", KeyAction.Character("'")),
                 Key("\"", KeyAction.Character("\"")),
-                if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";")),
-                Key("⌨", KeyAction.ModeNumpad, 1.2f, isSpecial = true)
+                if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";"))
             )
         }
         val row4 = listOf(
             Key("↵", KeyAction.Enter, 1.2f, isSpecial = true, isAccent = true),
-            Key(abcLabel, KeyAction.ModeLetters, 1.1f, isSpecial = true),
-            Key(if (secondary) "?123" else "#+=", if (secondary) KeyAction.ModeSymbols else KeyAction.ModeSymbols2, 1.1f, isSpecial = true),
-            Key(".", KeyAction.Character("."), 0.9f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
-            Key(space, KeyAction.Space, 3.0f),
-            Key(comma, KeyAction.Character(comma), 0.9f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null)
+            Key(if (fa) "۱۲۳؟" else "?123", KeyAction.ModeSymbols, 1.05f, isSpecial = true),
+            Key("#+=", KeyAction.ModeSymbols2, 1.0f, isSpecial = true),
+            Key(".", KeyAction.Character("."), 0.85f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
+            Key(space, KeyAction.Space, 2.9f),
+            Key(comma, KeyAction.Character(comma), 0.85f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
+            Key(abcLabel, KeyAction.ModeLetters, 1.0f, isSpecial = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -121,10 +122,11 @@ object KeyboardLayouts {
     private fun numpadRows(language: KeyboardLanguage): List<List<Key>> {
         val fa = language == KeyboardLanguage.FA
         val abc = if (fa) "اب‌ج" else "ABC"
-        val row1 = listOf(k("1"), k("2"), k("3"), Key("⌫", KeyAction.Backspace, isSpecial = true))
-        val row2 = listOf(k("4"), k("5"), k("6"), Key(if (fa) "،" else ",", KeyAction.Character(if (fa) "،" else ",")))
-        val row3 = listOf(k("7"), k("8"), k("9"), Key("فاصله".takeIf { fa } ?: "space", KeyAction.Space))
-        val row4 = listOf(Key(abc, KeyAction.ModeLetters, isSpecial = true), k("0"), Key(".", KeyAction.Character(".")), Key("↵", KeyAction.Enter, isSpecial = true, isAccent = true))
+        val digits = if (fa) listOf("۰","۹","۸","۷","۶","۵","۴","۳","۲","۱") else listOf("1","2","3","4","5","6","7","8","9","0")
+        val row1 = listOf(k(digits[2]), k(digits[1]), k(digits[0]), Key("⌫", KeyAction.Backspace, isSpecial = true))
+        val row2 = listOf(k(digits[5]), k(digits[4]), k(digits[3]), Key(if (fa) "،" else ",", KeyAction.Character(if (fa) "،" else ",")))
+        val row3 = listOf(k(digits[8]), k(digits[7]), k(digits[6]), Key(if (fa) "فاصله" else "space", KeyAction.Space))
+        val row4 = listOf(Key(abc, KeyAction.ModeLetters, isSpecial = true), k(digits[9]), Key(".", KeyAction.Character(".")), Key("↵", KeyAction.Enter, isSpecial = true, isAccent = true))
         return listOf(row1, row2, row3, row4)
     }
 
