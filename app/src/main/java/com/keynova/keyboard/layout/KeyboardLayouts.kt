@@ -31,13 +31,13 @@ object KeyboardLayouts {
             fa("گ"), fa("ک"), fa("و"), fa("د", "ذ"), fa("ر"), fa("ز", "ژ"), fa("ط"), fa("ظ")
         )
         val row4 = listOf(
-            Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true),
-            Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.05f, isSpecial = true),
+            Key(label = "↵", action = KeyAction.Enter, weight = 1.15f, isSpecial = true, isAccent = true),
+            Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = ".", action = KeyAction.Character("."), weight = 0.85f, popupActions = persianDotPopup()),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 2.9f),
-            Key(label = "،", action = KeyAction.Character("،"), weight = 0.85f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
-            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true)
+            Key(label = "فاصله", action = KeyAction.Space, weight = 2.7f),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 0.85f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -57,13 +57,13 @@ object KeyboardLayouts {
             add(Key(label = if (upper) "⇪" else "⇧", action = KeyAction.Shift, weight = 1.5f, isSpecial = true, isAccent = upper))
         }
         val row4 = listOf(
-            Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true),
-            Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.05f, isSpecial = true),
+            Key(label = "↵", action = KeyAction.Enter, weight = 1.15f, isSpecial = true, isAccent = true),
+            Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = ".", action = KeyAction.Character("."), weight = 0.85f, popupActions = englishDotPopup()),
-            Key(label = "space", action = KeyAction.Space, weight = 2.9f),
-            Key(label = ",", action = KeyAction.Character(","), weight = 0.85f),
-            Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true)
+            Key(label = "space", action = KeyAction.Space, weight = 2.7f),
+            Key(label = ",", action = KeyAction.Character(","), weight = 0.85f)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -74,8 +74,9 @@ object KeyboardLayouts {
         val comma = if (fa) "،" else ","
         val space = if (fa) "فاصله" else "space"
 
+        val digits = if (fa) listOf("۰","۹","۸","۷","۶","۵","۴","۳","۲","۱") else listOf("0","9","8","7","6","5","4","3","2","1")
         val row1 = if (!secondary) {
-            listOf("۰","۹","۸","۷","۶","۵","۴","۳","۲","۱").map { Key(it, KeyAction.Character(it)) }
+            digits.map { Key(it, KeyAction.Character(it)) }
         } else {
             listOf("[", "]", "{", "}", "#", "%", "^", "*", "+", "=").map { Key(it, KeyAction.Character(it)) }
         }
