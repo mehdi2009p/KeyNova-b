@@ -4,66 +4,41 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.SeekBar
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import com.keynova.keyboard.R
-import com.keynova.keyboard.settings.KeyboardPrefs
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var statusEnabled: TextView
     private lateinit var statusSelected: TextView
-    private lateinit var prefs: KeyboardPrefs
+    private lateinit var testInput: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        prefs = KeyboardPrefs(this)
         statusEnabled = findViewById(R.id.statusEnabled)
         statusSelected = findViewById(R.id.statusSelected)
+        testInput = findViewById(R.id.testInput)
 
-        findViewById<Button>(R.id.btnEnableKeyboard).setOnClickListener {
+        findViewById<View>(R.id.cardEnable).setOnClickListener {
             startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
         }
-
-        findViewById<Button>(R.id.btnSelectKeyboard).setOnClickListener {
+        findViewById<View>(R.id.cardSelect).setOnClickListener {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showInputMethodPicker()
         }
-
-        setupSettingsControls()
-    }
-
-    private fun setupSettingsControls() {
-        val vibration = findViewById<SwitchCompat>(R.id.switchVibration)
-        val sound = findViewById<SwitchCompat>(R.id.switchSound)
-        val heightSeek = findViewById<SeekBar>(R.id.seekHeight)
-        val heightValue = findViewById<TextView>(R.id.heightValue)
-
-        vibration.isChecked = prefs.vibrationEnabled
-        sound.isChecked = prefs.soundEnabled
-
-        vibration.setOnCheckedChangeListener { _, checked -> prefs.vibrationEnabled = checked }
-        sound.setOnCheckedChangeListener { _, checked -> prefs.soundEnabled = checked }
-
-        heightSeek.max = KeyboardPrefs.MAX_HEIGHT_DP - KeyboardPrefs.MIN_HEIGHT_DP
-        heightSeek.progress = prefs.keyHeightDp - KeyboardPrefs.MIN_HEIGHT_DP
-        heightValue.text = getString(R.string.setting_height_desc) + " (${prefs.keyHeightDp}dp)"
-
-        heightSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val dp = KeyboardPrefs.MIN_HEIGHT_DP + progress
-                heightValue.text = getString(R.string.setting_height_desc) + " (${dp}dp)"
-                if (fromUser) prefs.keyHeightDp = dp
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        findViewById<View>(R.id.cardSettings).setOnClickListener {
+            startActivity(Intent(this, KeyboardSettingsActivity::class.java))
+        }
+        findViewById<View>(R.id.cardTest).setOnClickListener {
+            testInput.visibility = if (testInput.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            if (testInput.visibility == View.VISIBLE) testInput.requestFocus()
+        }
     }
 
     override fun onResume() {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/keynova_background"
@@ -12,230 +13,97 @@
         android:padding="20dp">
 
         <TextView
-            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settings_title"
+            android:text="@string/home_welcome"
             android:textColor="@color/keynova_accent"
-            android:textSize="30sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/settings_intro"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="15sp" />
-
-        <TextView
-            android:id="@+id/statusEnabled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/keynova_status_warn"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/statusSelected"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="@color/keynova_status_warn"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:text="@string/home_subtitle"
+            android:textColor="@color/keynova_text_secondary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@color/keynova_key_bg"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/statusEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/keynova_status_warn"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/statusSelected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/keynova_status_warn"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/enable_keyboard_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="18sp"
+            android:text="@string/group_typing"
+            android:textColor="@color/keynova_accent"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/enable_keyboard_desc"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="14sp" />
+        <LinearLayout
+            android:id="@+id/cardEnable"
+            style="@style/HomeCard">
+            <TextView style="@style/HomeCardTitle" android:text="@string/menu_enable" />
+            <TextView style="@style/HomeCardDesc" android:text="@string/enable_keyboard_desc" />
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/btnEnableKeyboard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@color/keynova_accent"
-            android:text="@string/enable_keyboard_button"
-            android:textAllCaps="false"
-            android:textColor="#1A1A1A" />
+        <LinearLayout
+            android:id="@+id/cardSelect"
+            style="@style/HomeCard">
+            <TextView style="@style/HomeCardTitle" android:text="@string/menu_select" />
+            <TextView style="@style/HomeCardDesc" android:text="@string/select_keyboard_desc" />
+        </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/select_keyboard_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:id="@+id/cardSettings"
+            style="@style/HomeCard">
+            <TextView style="@style/HomeCardTitle" android:text="@string/menu_settings" />
+            <TextView style="@style/HomeCardDesc" android:text="@string/setting_height_title" />
+        </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/select_keyboard_desc"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/btnSelectKeyboard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@color/keynova_key_bg"
-            android:text="@string/select_keyboard_button"
-            android:textAllCaps="false"
-            android:textColor="@color/keynova_text" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/test_keyboard_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/test_keyboard_desc"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="14sp" />
+        <LinearLayout
+            android:id="@+id/cardTest"
+            style="@style/HomeCard">
+            <TextView style="@style/HomeCardTitle" android:text="@string/menu_test" />
+            <TextView style="@style/HomeCardDesc" android:text="@string/test_keyboard_desc" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/testInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:background="@color/keynova_key_bg"
             android:hint="@string/test_keyboard_hint"
             android:inputType="textMultiLine"
             android:minLines="3"
             android:padding="12dp"
             android:textColor="@color/keynova_text"
-            android:textColorHint="@color/keynova_text_secondary" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="24dp"
-            android:background="@color/keynova_key_bg" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/settings_section_title"
-            android:textColor="@color/keynova_accent"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switchVibration"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/setting_vibration_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/setting_vibration_desc"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="13sp" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switchSound"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/setting_sound_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/setting_sound_desc"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="13sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/setting_height_title"
-            android:textColor="@color/keynova_text"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/heightValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="13sp" />
-
-        <SeekBar
-            android:id="@+id/seekHeight"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:max="20"
-            android:progressTint="@color/keynova_accent"
-            android:thumbTint="@color/keynova_accent" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/height_small"
-                android:textColor="@color/keynova_text_secondary"
-                android:textSize="12sp" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/height_default"
-                android:textColor="@color/keynova_text_secondary"
-                android:textSize="12sp" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:text="@string/height_large"
-                android:textColor="@color/keynova_text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
+            android:textColorHint="@color/keynova_text_secondary"
+            android:visibility="gone" />
 
     </LinearLayout>
 </ScrollView>

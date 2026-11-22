@@ -32,6 +32,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.KeyboardSettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_section_title" />
+
     </application>
 
 </manifest>

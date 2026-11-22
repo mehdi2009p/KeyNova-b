@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/keynova_background"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/keynova_background"
+        app:navigationIcon="@android:drawable/ic_media_previous"
+        app:title="@string/settings_section_title"
+        app:titleTextColor="@color/keynova_accent" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView style="@style/SettingsGroupTitle" android:text="@string/group_typing" />
+
+            <LinearLayout style="@style/SettingsCard">
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchVibration" style="@style/SettingsSwitch" android:text="@string/setting_vibration_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_vibration_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSound" style="@style/SettingsSwitch" android:text="@string/setting_sound_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_sound_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchPreview" style="@style/SettingsSwitch" android:text="@string/setting_preview_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_preview_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSpaceDot" style="@style/SettingsSwitch" android:text="@string/setting_space_dot_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_space_dot_desc" />
+            </LinearLayout>
+
+            <TextView style="@style/SettingsGroupTitle" android:text="@string/group_layout" />
+
+            <LinearLayout style="@style/SettingsCard">
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchNumberRow" style="@style/SettingsSwitch" android:text="@string/setting_number_row_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_number_row_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchHints" style="@style/SettingsSwitch" android:text="@string/setting_hints_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_hints_desc" />
+            </LinearLayout>
+
+            <TextView style="@style/SettingsGroupTitle" android:text="@string/group_appearance" />
+
+            <LinearLayout style="@style/SettingsCard">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_height_title" />
+                    <TextView android:id="@+id/valueHeight" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekHeight" style="@style/SettingsSeek" />
+
+                <View style="@style/SettingsDivider" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_gap_title" />
+                    <TextView android:id="@+id/valueGap" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekGap" style="@style/SettingsSeek" />
+
+                <View style="@style/SettingsDivider" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_text_size_title" />
+                    <TextView android:id="@+id/valueText" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekText" style="@style/SettingsSeek" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

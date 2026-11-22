@@ -21,13 +21,30 @@
     <string name="status_not_selected">KeyNova فعال است اما انتخاب نشده است.</string>
 
     <string name="settings_section_title">تنظیمات کیبورد</string>
+    <string name="home_welcome">خوش آمدید به KeyNova</string>
+    <string name="home_subtitle">کیبورد فارسی، سریع و سبک</string>
+    <string name="menu_settings">تنظیمات کیبورد</string>
+    <string name="menu_test">تست کیبورد</string>
+    <string name="menu_enable">فعال‌سازی کیبورد</string>
+    <string name="menu_select">انتخاب کیبورد</string>
+
+    <string name="group_typing">تایپ</string>
+    <string name="group_layout">چیدمان</string>
+    <string name="group_appearance">ظاهر</string>
+
     <string name="setting_vibration_title">لرزش هنگام تایپ</string>
     <string name="setting_vibration_desc">با لمس کلیدها لرزش کوتاه احساس شود.</string>
     <string name="setting_sound_title">صدای کلید</string>
     <string name="setting_sound_desc">هنگام فشردن کلید صدای استاندارد پخش شود.</string>
+    <string name="setting_preview_title">پیش‌نمایش کلید</string>
+    <string name="setting_preview_desc">نمایش بزرگ کلید هنگام لمس.</string>
+    <string name="setting_space_dot_title">نقطه با نگه داشتن فاصله</string>
+    <string name="setting_space_dot_desc">با نگه داشتن Space، نقطه درج شود.</string>
+    <string name="setting_number_row_title">ردیف اعداد</string>
+    <string name="setting_number_row_desc">نمایش ردیف اعداد بالای حروف.</string>
+    <string name="setting_hints_title">نمایش کاراکترهای لانگ‌پرس</string>
+    <string name="setting_hints_desc">نمایش راهنمای کوچک روی کلیدها.</string>
     <string name="setting_height_title">ارتفاع کیبورد</string>
-    <string name="setting_height_desc">ارتفاع دکمه‌ها را برای راحتی تایپ تنظیم کنید.</string>
-    <string name="height_small">کم</string>
-    <string name="height_default">متوسط</string>
-    <string name="height_large">زیاد</string>
+    <string name="setting_gap_title">فاصله بین کلیدها</string>
+    <string name="setting_text_size_title">اندازه متن کلیدها</string>
 </resources>
