@@ -32,7 +32,7 @@ class SettingsActivity : AppCompatActivity() {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showInputMethodPicker()
         }
-        findViewById<View>(R.id.cardSettings).setOnClickListener {
+        findViewById<View>(R.id.btnSettingsTop).setOnClickListener {
             startActivity(Intent(this, KeyboardSettingsActivity::class.java))
         }
         findViewById<View>(R.id.cardTest).setOnClickListener {

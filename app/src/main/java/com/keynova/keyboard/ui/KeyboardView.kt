@@ -101,10 +101,22 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         prefs.registerListener(prefListener)
     }
 
+    private var wallpaperView: ImageView? = null
+    private var contentWrap: LinearLayout? = null
+
     private fun applyTheme() {
-        theme.wallpaperDrawable?.let { res ->
-            setBackgroundResource(res)
-        } ?: run {
+        val wp = theme.wallpaperDrawable
+        if (wp != null) {
+            setBackgroundColor(theme.background)
+            if (wallpaperView == null) {
+                wallpaperView = ImageView(context).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    alpha = 0.55f
+                }
+            }
+            wallpaperView?.setImageResource(wp)
+        } else {
+            wallpaperView = null
             setBackgroundColor(theme.background)
         }
     }
@@ -124,12 +136,32 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         dismissKeyPreview()
         removeAllViews()
         val ctrl = controller ?: return
-        addView(createTopBar())
-        val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.language, ctrl.shiftState).toMutableList()
-        if (numberRowEnabled && ctrl.mode == KeyboardMode.LETTERS) {
-            rows.add(0, numberRow(ctrl.language))
+
+        val content = LinearLayout(context).apply {
+            orientation = VERTICAL
+            layoutParams = android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM)
         }
-        rows.forEach { rowKeys -> addView(createRow(rowKeys)) }
+        content.addView(createTopBar())
+        val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.language, ctrl.shiftState).toMutableList()
+        if (numberRowEnabled && ctrl.mode == KeyboardMode.LETTERS) rows.add(0, numberRow(ctrl.language))
+        rows.forEach { rowKeys -> content.addView(createRow(rowKeys)) }
+
+        if (theme.wallpaperDrawable != null) {
+            val root = android.widget.FrameLayout(context).apply {
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                clipChildren = false
+            }
+            val wp = ImageView(context).apply {
+                setImageResource(theme.wallpaperDrawable!!)
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                alpha = 0.65f
+            }
+            root.addView(wp, android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+            root.addView(content)
+            addView(root)
+        } else {
+            addView(content)
+        }
         updateSuggestions()
     }
 
@@ -156,7 +188,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(40))
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(42))
         }
         val clipBtn = TextView(context).apply {
             text = "📋"
@@ -166,19 +198,27 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             layoutParams = LayoutParams(dp(44), LayoutParams.MATCH_PARENT)
             setOnClickListener { toggleClipboard() }
         }
-        val sugScroll = HorizontalScrollView(context).apply {
-            isHorizontalScrollBarEnabled = false
-            layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
-        }
         val sugRow = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+            layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
+            weightSum = 3f
         }
-        sugScroll.addView(sugRow)
+        repeat(3) {
+            val tv = TextView(context).apply {
+                text = ""
+                setTextColor(theme.text)
+                textSize = 15f
+                gravity = Gravity.CENTER
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
+            }
+            sugRow.addView(tv)
+        }
         suggestionBar = sugRow
         row.addView(clipBtn)
-        row.addView(sugScroll)
+        row.addView(sugRow)
         wrap.addView(row)
 
         val clipScroll = HorizontalScrollView(context).apply {
@@ -222,17 +262,31 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     fun updateSuggestions() {
         val bar = suggestionBar ?: return
-        bar.removeAllViews()
         val ctrl = controller ?: return
-        if (!suggestionsEnabled || ctrl.mode != KeyboardMode.LETTERS) return
-        val ic = ctrl.currentInputConnection() ?: return
-        val before = ic.getTextBeforeCursor(40, 0)?.toString().orEmpty()
+        val ic = ctrl.currentInputConnection()
+        val before = ic?.getTextBeforeCursor(80, 0)?.toString().orEmpty()
         val current = before.takeLastWhile { !it.isWhitespace() }
         val afterSpace = before.isEmpty() || before.last().isWhitespace()
-        if (current.isNotEmpty()) suggestions.learn(current)
-        val list = suggestions.suggest(current, ctrl.language, afterSpace)
-        list.forEach { word ->
-            bar.addView(makeChip(word, true) { applySuggestion(word, current) })
+        // learn previous word when space entered
+        val tokens = Regex("[\\p{L}\\u200C']+").findAll(before).map { it.value }.toList()
+        if (afterSpace && tokens.isNotEmpty()) suggestions.learn(tokens.takeLast(2).joinToString(" "))
+
+        val list = if (suggestionsEnabled && ctrl.mode == KeyboardMode.LETTERS) {
+            if (current.isEmpty() && afterSpace) {
+                val prev = tokens.lastOrNull().orEmpty()
+                suggestions.suggestNext(ctrl.language, prev)
+            } else suggestions.suggest(current, ctrl.language, afterSpace)
+        } else emptyList()
+
+        for (i in 0 until bar.childCount) {
+            val tv = bar.getChildAt(i) as TextView
+            val word = list.getOrNull(i)
+            if (word == null) {
+                tv.text = ""; tv.isClickable = false; tv.setOnClickListener(null); tv.alpha = 0f
+            } else {
+                tv.text = word; tv.alpha = 1f; tv.isClickable = true
+                tv.setOnClickListener { applySuggestion(word, current) }
+            }
         }
     }
 

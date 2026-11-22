@@ -76,12 +76,22 @@
     <style name="HomeCard">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">10dp</item>
-        <item name="android:background">@color/keynova_key_bg</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:background">@drawable/home_card_bg</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
-        <item name="android:orientation">vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
         <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="HomeCardIcon">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginEnd">14dp</item>
+        <item name="android:background">@drawable/home_icon_bg</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:tint">@color/keynova_accent</item>
     </style>
 
     <style name="HomeCardTitle">
