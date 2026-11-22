@@ -25,16 +25,13 @@ class KeyboardSettingsActivity : AppCompatActivity() {
         bindSwitch(R.id.switchNumberRow, prefs.numberRowEnabled) { prefs.numberRowEnabled = it }
         bindSwitch(R.id.switchHints, prefs.showHintsEnabled) { prefs.showHintsEnabled = it }
         bindSwitch(R.id.switchSpaceDot, prefs.longPressSpaceDot) { prefs.longPressSpaceDot = it }
+        bindSwitch(R.id.switchSwipeLang, prefs.swipeSpaceLanguage) { prefs.swipeSpaceLanguage = it }
+        bindSwitch(R.id.switchDoubleSpace, prefs.doubleSpacePeriod) { prefs.doubleSpacePeriod = it }
 
-        bindSeek(R.id.seekHeight, R.id.valueHeight, KeyboardPrefs.MIN_HEIGHT_DP, KeyboardPrefs.MAX_HEIGHT_DP, prefs.keyHeightDp, "dp") {
-            prefs.keyHeightDp = it
-        }
-        bindSeek(R.id.seekGap, R.id.valueGap, KeyboardPrefs.MIN_GAP_DP, KeyboardPrefs.MAX_GAP_DP, prefs.keyGapDp, "dp") {
-            prefs.keyGapDp = it
-        }
-        bindSeek(R.id.seekText, R.id.valueText, KeyboardPrefs.MIN_TEXT_SP, KeyboardPrefs.MAX_TEXT_SP, prefs.keyTextSizeSp, "sp") {
-            prefs.keyTextSizeSp = it
-        }
+        bindSeek(R.id.seekHeight, R.id.valueHeight, KeyboardPrefs.MIN_HEIGHT_DP, KeyboardPrefs.MAX_HEIGHT_DP, prefs.keyHeightDp, "dp") { prefs.keyHeightDp = it }
+        bindSeek(R.id.seekGap, R.id.valueGap, KeyboardPrefs.MIN_GAP_DP, KeyboardPrefs.MAX_GAP_DP, prefs.keyGapDp, "dp") { prefs.keyGapDp = it }
+        bindSeek(R.id.seekText, R.id.valueText, KeyboardPrefs.MIN_TEXT_SP, KeyboardPrefs.MAX_TEXT_SP, prefs.keyTextSizeSp, "sp") { prefs.keyTextSizeSp = it }
+        bindSeek(R.id.seekLongPress, R.id.valueLongPress, KeyboardPrefs.MIN_LONG_PRESS_MS, KeyboardPrefs.MAX_LONG_PRESS_MS, prefs.longPressDelayMs, "ms") { prefs.longPressDelayMs = it }
     }
 
     private fun bindSwitch(id: Int, initial: Boolean, onChange: (Boolean) -> Unit) {

@@ -40,6 +40,12 @@
                 <View style="@style/SettingsDivider" />
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSpaceDot" style="@style/SettingsSwitch" android:text="@string/setting_space_dot_title" />
                 <TextView style="@style/SettingsDesc" android:text="@string/setting_space_dot_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSwipeLang" style="@style/SettingsSwitch" android:text="@string/setting_swipe_lang_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_swipe_lang_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchDoubleSpace" style="@style/SettingsSwitch" android:text="@string/setting_double_space_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_double_space_desc" />
             </LinearLayout>
 
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_layout" />
@@ -76,6 +82,14 @@
                     <TextView android:id="@+id/valueText" style="@style/SettingsValue" />
                 </LinearLayout>
                 <SeekBar android:id="@+id/seekText" style="@style/SettingsSeek" />
+
+                <View style="@style/SettingsDivider" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_long_press_title" />
+                    <TextView android:id="@+id/valueLongPress" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekLongPress" style="@style/SettingsSeek" />
             </LinearLayout>
 
         </LinearLayout>

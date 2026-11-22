@@ -47,9 +47,13 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     @Volatile private var numberRowEnabled = prefs.numberRowEnabled
     @Volatile private var showHintsEnabled = prefs.showHintsEnabled
     @Volatile private var longPressSpaceDot = prefs.longPressSpaceDot
+    @Volatile private var swipeSpaceLanguage = prefs.swipeSpaceLanguage
+    @Volatile private var doubleSpacePeriod = prefs.doubleSpacePeriod
     @Volatile private var keyHeightDp = prefs.keyHeightDp
     @Volatile private var keyGapDp = prefs.keyGapDp
     @Volatile private var keyTextSizeSp = prefs.keyTextSizeSp
+    @Volatile private var longPressDelayMs = prefs.longPressDelayMs
+    private var lastSpaceTapMs = 0L
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
             KeyboardPrefs.KEY_VIBRATION -> vibrationEnabled = prefs.vibrationEnabled
@@ -57,6 +61,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             KeyboardPrefs.KEY_PREVIEW -> keyPreviewEnabled = prefs.keyPreviewEnabled
             KeyboardPrefs.KEY_HINTS -> showHintsEnabled = prefs.showHintsEnabled
             KeyboardPrefs.KEY_SPACE_DOT -> longPressSpaceDot = prefs.longPressSpaceDot
+            KeyboardPrefs.KEY_SWIPE_SPACE_LANG -> swipeSpaceLanguage = prefs.swipeSpaceLanguage
+            KeyboardPrefs.KEY_DOUBLE_SPACE_PERIOD -> doubleSpacePeriod = prefs.doubleSpacePeriod
+            KeyboardPrefs.KEY_LONG_PRESS_DELAY -> longPressDelayMs = prefs.longPressDelayMs
             KeyboardPrefs.KEY_HEIGHT, KeyboardPrefs.KEY_GAP, KeyboardPrefs.KEY_TEXT_SIZE, KeyboardPrefs.KEY_NUMBER_ROW -> {
                 keyHeightDp = prefs.keyHeightDp
                 keyGapDp = prefs.keyGapDp
@@ -210,12 +217,12 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     switched = false
                     longDotFired = false
                     provideFeedback(view)
-                    if (longPressSpaceDot) handler.postDelayed(dotRunnable, LONG_PRESS_MS)
+                    if (longPressSpaceDot) handler.postDelayed(dotRunnable, longPressDelayMs.toLong())
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.x - downX
-                    if (!switched && abs(dx) > dp(44)) {
+                    if (swipeSpaceLanguage && !switched && abs(dx) > dp(44)) {
                         switched = true
                         handler.removeCallbacks(dotRunnable)
                         controller?.handleAction(KeyAction.SwitchLanguage)
@@ -224,7 +231,18 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 }
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacks(dotRunnable)
-                    if (!switched && !longDotFired) controller?.handleAction(KeyAction.Space)
+                    if (!switched && !longDotFired) {
+                        val now = System.currentTimeMillis()
+                        if (doubleSpacePeriod && now - lastSpaceTapMs < 320L) {
+                            controller?.handleAction(KeyAction.Backspace)
+                            controller?.handleAction(KeyAction.Character("."))
+                            controller?.handleAction(KeyAction.Space)
+                            lastSpaceTapMs = 0L
+                        } else {
+                            controller?.handleAction(KeyAction.Space)
+                            lastSpaceTapMs = now
+                        }
+                    }
                     view.performClick()
                     true
                 }
@@ -250,13 +268,13 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                             longPressFired = true
                             dismissKeyPreview()
                             showPopup(view, key.popupActions)
-                        }, LONG_PRESS_MS)
+                        }, longPressDelayMs.toLong())
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
                             longPressFired = true
                             dismissKeyPreview()
                             controller?.handleAction(key.longPressAction)
-                        }, LONG_PRESS_MS)
+                        }, longPressDelayMs.toLong())
                     }
                     true
                 }
@@ -353,6 +371,6 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), resources.displayMetrics).toInt()
 
     companion object {
-        private const val LONG_PRESS_MS = 350L
+        private const val LONG_PRESS_MS = 350L // fallback; actual delay from prefs
     }
 }

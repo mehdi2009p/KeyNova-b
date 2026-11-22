@@ -40,6 +40,10 @@
     <string name="setting_preview_desc">نمایش بزرگ کلید هنگام لمس.</string>
     <string name="setting_space_dot_title">نقطه با نگه داشتن فاصله</string>
     <string name="setting_space_dot_desc">با نگه داشتن Space، نقطه درج شود.</string>
+    <string name="setting_swipe_lang_title">تغییر زبان با کشیدن روی فاصله</string>
+    <string name="setting_swipe_lang_desc">با کشیدن افقی روی Space بین فارسی و انگلیسی جابه‌جا شوید.</string>
+    <string name="setting_double_space_title">نقطه با دوبار فاصله</string>
+    <string name="setting_double_space_desc">با دو بار زدن Space، نقطه و فاصله درج شود.</string>
     <string name="setting_number_row_title">ردیف اعداد</string>
     <string name="setting_number_row_desc">نمایش ردیف اعداد بالای حروف.</string>
     <string name="setting_hints_title">نمایش کاراکترهای لانگ‌پرس</string>
@@ -47,4 +51,5 @@
     <string name="setting_height_title">ارتفاع کیبورد</string>
     <string name="setting_gap_title">فاصله بین کلیدها</string>
     <string name="setting_text_size_title">اندازه متن کلیدها</string>
+    <string name="setting_long_press_title">تأخیر نگه داشتن کلید</string>
 </resources>
