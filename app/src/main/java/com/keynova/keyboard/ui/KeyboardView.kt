@@ -47,29 +47,32 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     @Volatile private var numberRowEnabled = prefs.numberRowEnabled
     @Volatile private var showHintsEnabled = prefs.showHintsEnabled
     @Volatile private var longPressSpaceDot = prefs.longPressSpaceDot
-    @Volatile private var swipeSpaceLanguage = prefs.swipeSpaceLanguage
     @Volatile private var doubleSpacePeriod = prefs.doubleSpacePeriod
+    @Volatile private var spaceSwipeMode = prefs.spaceSwipeMode
+    @Volatile private var spaceLabelMode = prefs.spaceLabelMode
     @Volatile private var keyHeightDp = prefs.keyHeightDp
     @Volatile private var keyGapDp = prefs.keyGapDp
     @Volatile private var keyTextSizeSp = prefs.keyTextSizeSp
     @Volatile private var longPressDelayMs = prefs.longPressDelayMs
+    @Volatile private var soundVolumePercent = prefs.soundVolumePercent
+    @Volatile private var bottomPaddingDp = prefs.bottomPaddingDp
     private var lastSpaceTapMs = 0L
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
             KeyboardPrefs.KEY_VIBRATION -> vibrationEnabled = prefs.vibrationEnabled
             KeyboardPrefs.KEY_SOUND -> soundEnabled = prefs.soundEnabled
             KeyboardPrefs.KEY_PREVIEW -> keyPreviewEnabled = prefs.keyPreviewEnabled
-            KeyboardPrefs.KEY_HINTS -> showHintsEnabled = prefs.showHintsEnabled
+            KeyboardPrefs.KEY_HINTS -> { showHintsEnabled = prefs.showHintsEnabled; post { render() } }
             KeyboardPrefs.KEY_SPACE_DOT -> longPressSpaceDot = prefs.longPressSpaceDot
-            KeyboardPrefs.KEY_SWIPE_SPACE_LANG -> swipeSpaceLanguage = prefs.swipeSpaceLanguage
             KeyboardPrefs.KEY_DOUBLE_SPACE_PERIOD -> doubleSpacePeriod = prefs.doubleSpacePeriod
+            KeyboardPrefs.KEY_SPACE_SWIPE_MODE, KeyboardPrefs.KEY_SWIPE_SPACE_LANG -> spaceSwipeMode = prefs.spaceSwipeMode
+            KeyboardPrefs.KEY_SPACE_LABEL -> { spaceLabelMode = prefs.spaceLabelMode; post { render() } }
             KeyboardPrefs.KEY_LONG_PRESS_DELAY -> longPressDelayMs = prefs.longPressDelayMs
-            KeyboardPrefs.KEY_HEIGHT, KeyboardPrefs.KEY_GAP, KeyboardPrefs.KEY_TEXT_SIZE, KeyboardPrefs.KEY_NUMBER_ROW -> {
-                keyHeightDp = prefs.keyHeightDp
-                keyGapDp = prefs.keyGapDp
-                keyTextSizeSp = prefs.keyTextSizeSp
-                numberRowEnabled = prefs.numberRowEnabled
-                post { render() }
+            KeyboardPrefs.KEY_SOUND_VOLUME -> soundVolumePercent = prefs.soundVolumePercent
+            KeyboardPrefs.KEY_BOTTOM_PADDING, KeyboardPrefs.KEY_HEIGHT, KeyboardPrefs.KEY_GAP, KeyboardPrefs.KEY_TEXT_SIZE, KeyboardPrefs.KEY_NUMBER_ROW -> {
+                keyHeightDp = prefs.keyHeightDp; keyGapDp = prefs.keyGapDp; keyTextSizeSp = prefs.keyTextSizeSp
+                numberRowEnabled = prefs.numberRowEnabled; bottomPaddingDp = prefs.bottomPaddingDp
+                post { updatePadding(); render() }
             }
         }
     }
@@ -78,12 +81,16 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         orientation = VERTICAL
         layoutDirection = View.LAYOUT_DIRECTION_LTR
         setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_background))
-        val pad = dp(4)
-        setPadding(pad, dp(10), pad, dp(38))
+        updatePadding()
         isClickable = true
         isFocusable = false
         isHapticFeedbackEnabled = true
         prefs.registerListener(prefListener)
+    }
+
+    private fun updatePadding() {
+        val pad = dp(4)
+        setPadding(pad, dp(10), pad, dp(bottomPaddingDp))
     }
 
     override fun onDetachedFromWindow() {
@@ -141,7 +148,11 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
         val tv = TextView(context).apply {
             text = when (key.action) {
-                KeyAction.Space -> if ((controller?.language?.name ?: "FA") == "FA") "فاصله" else "space"
+                KeyAction.Space -> when (spaceLabelMode) {
+                    0 -> if ((controller?.language ?: KeyboardLanguage.FA) == KeyboardLanguage.FA) "فارسی" else "English"
+                    2 -> ""
+                    else -> if ((controller?.language ?: KeyboardLanguage.FA) == KeyboardLanguage.FA) "فاصله" else "space"
+                }
                 else -> key.label
             }
             contentDescription = when (key.action) {
@@ -222,10 +233,21 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.x - downX
-                    if (swipeSpaceLanguage && !switched && abs(dx) > dp(44)) {
-                        switched = true
-                        handler.removeCallbacks(dotRunnable)
-                        controller?.handleAction(KeyAction.SwitchLanguage)
+                    if (!switched && abs(dx) > dp(44)) {
+                        when (spaceSwipeMode) {
+                            1 -> { switched = true; handler.removeCallbacks(dotRunnable); controller?.handleAction(KeyAction.SwitchLanguage) }
+                            2 -> {
+                                val steps = (dx / dp(28)).toInt()
+                                if (steps != 0) {
+                                    switched = true // prevent space on up; cursor moved
+                                    handler.removeCallbacks(dotRunnable)
+                                    controller?.moveCursor(steps)
+                                    downX = event.x
+                                    switched = false // allow continuous move, but mark moved
+                                    longDotFired = true // reuse flag to suppress space
+                                }
+                            }
+                        }
                     }
                     true
                 }
@@ -364,7 +386,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     private fun provideFeedback(view: View) {
         if (vibrationEnabled) view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-        if (soundEnabled) audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, 0.6f)
+        if (soundEnabled) audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, soundVolumePercent / 100f)
     }
 
     private fun dp(value: Int): Int =

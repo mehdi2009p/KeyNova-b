@@ -41,11 +41,18 @@
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSpaceDot" style="@style/SettingsSwitch" android:text="@string/setting_space_dot_title" />
                 <TextView style="@style/SettingsDesc" android:text="@string/setting_space_dot_desc" />
                 <View style="@style/SettingsDivider" />
-                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSwipeLang" style="@style/SettingsSwitch" android:text="@string/setting_swipe_lang_title" />
-                <TextView style="@style/SettingsDesc" android:text="@string/setting_swipe_lang_desc" />
-                <View style="@style/SettingsDivider" />
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchDoubleSpace" style="@style/SettingsSwitch" android:text="@string/setting_double_space_title" />
                 <TextView style="@style/SettingsDesc" android:text="@string/setting_double_space_desc" />
+                <View style="@style/SettingsDivider" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchAutoCap" style="@style/SettingsSwitch" android:text="@string/setting_auto_cap_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_auto_cap_desc" />
+                <View style="@style/SettingsDivider" />
+                <TextView style="@style/SettingsLabel" android:text="@string/setting_space_swipe_title" />
+                <RadioGroup android:id="@+id/groupSpaceSwipe" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp">
+                    <RadioButton android:id="@+id/radioSwipeOff" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_off" android:textColor="@color/keynova_text" />
+                    <RadioButton android:id="@+id/radioSwipeLang" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_swipe_lang" android:textColor="@color/keynova_text" />
+                    <RadioButton android:id="@+id/radioSwipeCursor" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_swipe_cursor" android:textColor="@color/keynova_text" />
+                </RadioGroup>
             </LinearLayout>
 
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_layout" />
@@ -56,6 +63,13 @@
                 <View style="@style/SettingsDivider" />
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchHints" style="@style/SettingsSwitch" android:text="@string/setting_hints_title" />
                 <TextView style="@style/SettingsDesc" android:text="@string/setting_hints_desc" />
+                <View style="@style/SettingsDivider" />
+                <TextView style="@style/SettingsLabel" android:text="@string/setting_space_label_title" />
+                <RadioGroup android:id="@+id/groupSpaceLabel" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp">
+                    <RadioButton android:id="@+id/radioLabelLang" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_label_lang" android:textColor="@color/keynova_text" />
+                    <RadioButton android:id="@+id/radioLabelSpace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_label_space" android:textColor="@color/keynova_text" />
+                    <RadioButton android:id="@+id/radioLabelEmpty" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/opt_label_empty" android:textColor="@color/keynova_text" />
+                </RadioGroup>
             </LinearLayout>
 
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_appearance" />
@@ -90,6 +104,22 @@
                     <TextView android:id="@+id/valueLongPress" style="@style/SettingsValue" />
                 </LinearLayout>
                 <SeekBar android:id="@+id/seekLongPress" style="@style/SettingsSeek" />
+
+                <View style="@style/SettingsDivider" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_sound_volume_title" />
+                    <TextView android:id="@+id/valueSoundVol" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekSoundVol" style="@style/SettingsSeek" />
+
+                <View style="@style/SettingsDivider" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_bottom_padding_title" />
+                    <TextView android:id="@+id/valueBottomPad" style="@style/SettingsValue" />
+                </LinearLayout>
+                <SeekBar android:id="@+id/seekBottomPad" style="@style/SettingsSeek" />
             </LinearLayout>
 
         </LinearLayout>

@@ -15,6 +15,7 @@ class KeyNovaImeService : InputMethodService() {
 
     override fun onCreate() {
         super.onCreate()
+        val prefs = com.keynova.keyboard.settings.KeyboardPrefs(this)
         controller = KeyboardController(
             inputConnectionProvider = { currentInputConnection },
             editorInfoProvider = { currentInputEditorInfo },
@@ -24,7 +25,8 @@ class KeyNovaImeService : InputMethodService() {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 startActivity(intent)
-            }
+            },
+            autoCapitalizeProvider = { prefs.autoCapitalize }
         )
     }
 
