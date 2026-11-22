@@ -31,12 +31,12 @@ object KeyboardLayouts {
             fa("گ"), fa("ک"), fa("و"), fa("د", "ذ"), fa("ر"), fa("ز", "ژ"), fa("ط"), fa("ظ")
         )
         val row4 = listOf(
-            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
             Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 4.0f),
+            Key(label = "فاصله", action = KeyAction.Space, weight = 3.2f),
             Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
@@ -52,17 +52,17 @@ object KeyboardLayouts {
         val row1 = "qwertyuiop".map { c(it) }
         val row2 = "asdfghjkl".map { c(it) }
         val row3 = buildList {
-            add(Key(label = "⌫", action = KeyAction.Backspace, weight = 1.5f, isSpecial = true))
+            add(Key(label = "⇧", action = KeyAction.Shift, weight = 1.5f, isSpecial = true, isAccent = upper))
             "zxcvbnm".forEach { add(c(it)) }
-            add(Key(label = if (upper) "⇪" else "⇧", action = KeyAction.Shift, weight = 1.5f, isSpecial = true, isAccent = upper))
+            add(Key(label = "⌫", action = KeyAction.Backspace, weight = 1.5f, isSpecial = true))
         }
         val row4 = listOf(
-            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = englishDotPopup()),
+            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
             Key(label = "?123", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
-            Key(label = "space", action = KeyAction.Space, weight = 4.0f),
+            Key(label = "space", action = KeyAction.Space, weight = 3.2f),
             Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
@@ -108,12 +108,12 @@ object KeyboardLayouts {
             )
         }
         val row4 = listOf(
-            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
             Key(".", KeyAction.Character("."), 1.0f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
-            Key(abcLabel, KeyAction.ModeLetters, 1.0f, isSpecial = true),
+            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
+            Key("⌨", KeyAction.ModeNumpad, 1.0f, isSpecial = true),
             Key("#+=", KeyAction.ModeSymbols2, 1.0f, isSpecial = true),
             Key(if (fa) "۱۲۳؟" else "?123", KeyAction.ModeSymbols, 1.0f, isSpecial = true),
-            Key(space, KeyAction.Space, 4.0f),
+            Key(space, KeyAction.Space, 3.2f),
             Key("↵", KeyAction.Enter, 1.2f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
@@ -122,7 +122,7 @@ object KeyboardLayouts {
     private fun numpadRows(language: KeyboardLanguage): List<List<Key>> {
         val fa = language == KeyboardLanguage.FA
         val abc = if (fa) "اب‌ج" else "ABC"
-        val d = if (fa) listOf("۱","۲","۳","۴","۵","۶","۷","۸","۹","۰") else listOf("1","2","3","4","5","6","7","8","9","0")
+        val d = listOf("1","2","3","4","5","6","7","8","9","0")
         val row1 = listOf(k(d[0]), k(d[1]), k(d[2]), Key("⌫", KeyAction.Backspace, isSpecial = true))
         val row2 = listOf(k(d[3]), k(d[4]), k(d[5]), Key(if (fa) "،" else ",", KeyAction.Character(if (fa) "،" else ",")))
         val row3 = listOf(k(d[6]), k(d[7]), k(d[8]), Key(if (fa) "فاصله" else "space", KeyAction.Space))
