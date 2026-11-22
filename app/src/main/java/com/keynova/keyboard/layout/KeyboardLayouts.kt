@@ -18,17 +18,19 @@ object KeyboardLayouts {
     }
 
     private fun persianRows(): List<List<Key>> {
+        // Rows ordered for LTR rendering to produce standard Persian visual layout
         val row1 = listOf(
-            fa("چ"), fa("ج"), fa("ح"), fa("خ"), fa("ه"),
-            fa("ع", "غ"), fa("ف"), fa("ق"), fa("ث"), fa("ص", "ض")
+            fa("ص", "ض"), fa("ث"), fa("ق"), fa("ف"), fa("ع", "غ"),
+            fa("ه"), fa("خ"), fa("ح"), fa("ج"), fa("چ")
         )
         val row2 = listOf(
-            fa("پ"), fa("م"), fa("ن"), fa("ت"), fa("ا"),
-            fa("ل"), fa("ب"), fa("ی"), fa("س"), fa("ش")
+            fa("ش"), fa("س"), fa("ی"), fa("ب"), fa("ل"),
+            fa("ا"), fa("ت"), fa("ن"), fa("م"), fa("پ")
         )
         val row3 = listOf(
-            Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true),
-            fa("گ"), fa("ک"), fa("و"), fa("د", "ذ"), fa("ر"), fa("ز", "ژ"), fa("ط"), fa("ظ")
+            fa("ظ"), fa("ط"), fa("ز", "ژ"), fa("ر"), fa("د", "ذ"),
+            fa("و"), fa("ک"), fa("گ"),
+            Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true)
         )
         val row4 = listOf(
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
@@ -36,7 +38,7 @@ object KeyboardLayouts {
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
             Key(label = "۱۲۳؟", action = KeyAction.ModeSymbols, weight = 1.0f, isSpecial = true),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 3.2f),
+            Key(label = "فاصله", action = KeyAction.Space, weight = 4.4f),
             Key(label = "↵", action = KeyAction.Enter, weight = 1.2f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
