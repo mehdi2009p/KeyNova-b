@@ -82,27 +82,54 @@ class KeyboardPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_SUGGESTIONS, true)
         set(value) = prefs.edit().putBoolean(KEY_SUGGESTIONS, value).apply()
 
-    var clipboardHistory: List<String>
+    data class ClipItem(val text: String, val locked: Boolean = false)
+
+    var clipboardItems: List<ClipItem>
         get() {
             val raw = prefs.getString(KEY_CLIPBOARD, "[]") ?: "[]"
             return runCatching {
                 val arr = JSONArray(raw)
-                List(arr.length()) { arr.getString(it) }.filter { it.isNotBlank() }.take(20)
+                buildList {
+                    for (i in 0 until arr.length()) {
+                        val item = arr.opt(i)
+                        val clip = when (item) {
+                            is JSONObject -> ClipItem(item.optString("text").trim().take(500), item.optBoolean("locked", false))
+                            is String -> ClipItem(item.trim().take(500), false)
+                            else -> null
+                        }
+                        if (clip != null && clip.text.isNotBlank()) add(clip)
+                    }
+                }.distinctBy { it.text }.take(20)
             }.getOrDefault(emptyList())
         }
         set(value) {
             val arr = JSONArray()
-            value.filter { it.isNotBlank() }.distinct().take(20).forEach { arr.put(it) }
+            value.filter { it.text.isNotBlank() }.distinctBy { it.text }.take(20).forEach {
+                arr.put(JSONObject().put("text", it.text.trim().take(500)).put("locked", it.locked))
+            }
             prefs.edit().putString(KEY_CLIPBOARD, arr.toString()).apply()
         }
+
+    var clipboardHistory: List<String>
+        get() = clipboardItems.map { it.text }
+        set(value) { clipboardItems = value.map { ClipItem(it) } }
 
     fun addClipboardItem(text: String) {
         val clean = text.trim().take(500)
         if (clean.isBlank()) return
-        val current = clipboardHistory.toMutableList()
-        current.remove(clean)
-        current.add(0, clean)
-        clipboardHistory = current
+        val current = clipboardItems.toMutableList()
+        val existing = current.find { it.text == clean }
+        current.removeAll { it.text == clean }
+        current.add(0, existing?.copy(text = clean) ?: ClipItem(clean, false))
+        clipboardItems = current
+    }
+
+    fun removeClipboardItem(text: String) {
+        clipboardItems = clipboardItems.filterNot { it.text == text && !it.locked }
+    }
+
+    fun toggleClipboardLock(text: String) {
+        clipboardItems = clipboardItems.map { if (it.text == text) it.copy(locked = !it.locked) else it }
     }
 
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {

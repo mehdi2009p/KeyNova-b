@@ -172,14 +172,14 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     fun refreshClipboard() {
         val panel = clipboardPanel ?: return
         panel.removeAllViews()
-        val items = prefs.clipboardHistory
+        val items = prefs.clipboardItems
         if (items.isEmpty()) {
-            panel.addView(makeClipboardRow("کلیپ‌بورد خالی است") {})
+            panel.addView(makeClipboardRow("کلیپ‌بورد خالی است", locked = false, isEmpty = true) {})
             return
         }
         items.take(20).forEach { item ->
-            panel.addView(makeClipboardRow(item) {
-                controller?.currentInputConnection()?.commitText(item, 1)
+            panel.addView(makeClipboardRow(item.text, item.locked, false) {
+                controller?.currentInputConnection()?.commitText(item.text, 1)
                 hideClipboard()
                 updateSuggestions()
             })
@@ -275,18 +275,47 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         return panel
     }
 
-    private fun makeClipboardRow(text: String, onClick: () -> Unit): View {
-        return TextView(context).apply {
-            this.text = text.replace("\n", " ").trim()
+    private fun makeClipboardRow(text: String, locked: Boolean, isEmpty: Boolean, onClick: () -> Unit): View {
+        val row = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setBackgroundResource(theme.keySpecialDrawable)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply { setMargins(0, dp(4), 0, dp(4)) }
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+        }
+        val preview = text.replace("\n", " ").trim().let {
+            val words = it.split(Regex("\\s+")).filter { w -> w.isNotBlank() }
+            if (words.size <= 4) it else words.take(4).joinToString(" ") + " ..."
+        }
+        val tv = TextView(context).apply {
+            this.text = if (locked) "🔒 $preview" else preview
             setTextColor(theme.text)
             textSize = 14f
-            setPadding(dp(12), dp(12), dp(12), dp(12))
-            setBackgroundResource(theme.keySpecialDrawable)
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                setMargins(0, dp(4), 0, dp(4))
-            }
-            if (text != "کلیپ‌بورد خالی است") setOnClickListener { onClick() } else alpha = 0.7f
+            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
         }
+        row.addView(tv)
+        if (!isEmpty) {
+            row.setOnClickListener { onClick() }
+            row.setOnLongClickListener { showClipboardItemMenu(text, locked); true }
+        } else {
+            row.alpha = 0.7f
+        }
+        return row
+    }
+
+    private fun showClipboardItemMenu(text: String, locked: Boolean) {
+        val options = arrayOf(if (locked) "باز کردن قفل" else "قفل کردن", "حذف")
+        android.app.AlertDialog.Builder(context)
+            .setTitle(text.replace("\n", " ").take(40))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> { prefs.toggleClipboardLock(text); refreshClipboard() }
+                    1 -> {
+                        if (locked) android.widget.Toast.makeText(context, "ابتدا قفل را بردارید", android.widget.Toast.LENGTH_SHORT).show()
+                        else { prefs.removeClipboardItem(text); refreshClipboard() }
+                    }
+                }
+            }.show()
     }
 
     private fun showClipboard() {
