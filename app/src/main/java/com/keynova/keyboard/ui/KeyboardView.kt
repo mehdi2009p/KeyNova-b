@@ -49,8 +49,10 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private var suggestionBar: LinearLayout? = null
     private var clipboardPanel: LinearLayout? = null
     private var clipboardView: View? = null
+    private var clipboardActionBar: LinearLayout? = null
     private var keyboardContent: View? = null
     private var keyPreview: PopupWindow? = null
+    private var selectedClipText: String? = null
     @Volatile private var vibrationEnabled = prefs.vibrationEnabled
     @Volatile private var soundEnabled = prefs.soundEnabled
     @Volatile private var keyPreviewEnabled = prefs.keyPreviewEnabled
@@ -103,24 +105,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         prefs.registerListener(prefListener)
     }
 
-    private var wallpaperView: ImageView? = null
-    private var contentWrap: LinearLayout? = null
-
     private fun applyTheme() {
-        val wp = theme.wallpaperDrawable
-        if (wp != null) {
-            setBackgroundColor(theme.background)
-            if (wallpaperView == null) {
-                wallpaperView = ImageView(context).apply {
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                    alpha = 0.55f
-                }
-            }
-            wallpaperView?.setImageResource(wp)
-        } else {
-            wallpaperView = null
-            setBackgroundColor(theme.background)
-        }
+        setBackgroundColor(theme.background)
     }
 
     private fun updatePadding() {
@@ -153,14 +139,6 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
             clipChildren = false
         }
-        if (theme.wallpaperDrawable != null) {
-            val wp = ImageView(context).apply {
-                setImageResource(theme.wallpaperDrawable!!)
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                alpha = 0.65f
-            }
-            root.addView(wp, android.widget.FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-        }
         root.addView(content)
         val clip = createClipboardView()
         clipboardView = clip
@@ -173,17 +151,44 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val panel = clipboardPanel ?: return
         panel.removeAllViews()
         val items = prefs.clipboardItems
+        val selected = selectedClipText?.takeIf { sel -> items.any { it.text == sel } }
+        selectedClipText = selected
+        updateClipboardActions(selected, items.find { it.text == selected }?.locked == true)
+
         if (items.isEmpty()) {
-            panel.addView(makeClipboardRow("کلیپ‌بورد خالی است", locked = false, isEmpty = true) {})
+            panel.addView(makeClipboardRow("کلیپ‌بورد خالی است", locked = false, isEmpty = true, selected = false) {})
             return
         }
         items.take(20).forEach { item ->
-            panel.addView(makeClipboardRow(item.text, item.locked, false) {
+            panel.addView(makeClipboardRow(item.text, item.locked, false, selected == item.text) {
                 controller?.currentInputConnection()?.commitText(item.text, 1)
                 hideClipboard()
                 updateSuggestions()
             })
         }
+    }
+
+    private fun updateClipboardActions(selectedText: String?, locked: Boolean) {
+        val bar = clipboardActionBar ?: return
+        bar.removeAllViews()
+        if (selectedText == null) { bar.visibility = View.GONE; return }
+        bar.visibility = View.VISIBLE
+        fun btn(label: String, onClick: () -> Unit) = TextView(context).apply {
+            text = label
+            setTextColor(if (label == "حذف" && !locked) 0xFFFF7A7A.toInt() else theme.accent)
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+            setOnClickListener { onClick() }
+        }
+        bar.addView(btn(if (locked) "باز کردن قفل" else "قفل کردن") {
+            prefs.toggleClipboardLock(selectedText); refreshClipboard()
+        })
+        bar.addView(btn("حذف") {
+            if (locked) android.widget.Toast.makeText(context, "ابتدا قفل را بردارید", android.widget.Toast.LENGTH_SHORT).show()
+            else { prefs.removeClipboardItem(selectedText); selectedClipText = null; refreshClipboard() }
+        })
+        bar.addView(btn("لغو انتخاب") { selectedClipText = null; refreshClipboard() })
     }
 
     private fun createTopBar(): View {
@@ -258,6 +263,15 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         header.addView(back)
         header.addView(title)
 
+        val actionBar = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            visibility = View.GONE
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        clipboardActionBar = actionBar
+
         val scroll = android.widget.ScrollView(context).apply {
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f)
             isFillViewport = true
@@ -271,15 +285,16 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         clipboardPanel = list
 
         panel.addView(header)
+        panel.addView(actionBar)
         panel.addView(scroll)
         return panel
     }
 
-    private fun makeClipboardRow(text: String, locked: Boolean, isEmpty: Boolean, onClick: () -> Unit): View {
+    private fun makeClipboardRow(text: String, locked: Boolean, isEmpty: Boolean, selected: Boolean, onClick: () -> Unit): View {
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setBackgroundResource(theme.keySpecialDrawable)
+            setBackgroundResource(if (selected) theme.keyAccentDrawable else theme.keySpecialDrawable)
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply { setMargins(0, dp(4), 0, dp(4)) }
             setPadding(dp(12), dp(10), dp(12), dp(10))
         }
@@ -289,33 +304,18 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         }
         val tv = TextView(context).apply {
             this.text = if (locked) "🔒 $preview" else preview
-            setTextColor(theme.text)
+            setTextColor(if (selected) 0xFF10131A.toInt() else theme.text)
             textSize = 14f
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
         }
         row.addView(tv)
         if (!isEmpty) {
             row.setOnClickListener { onClick() }
-            row.setOnLongClickListener { showClipboardItemMenu(text, locked); true }
+            row.setOnLongClickListener { selectedClipText = text; refreshClipboard(); true }
         } else {
             row.alpha = 0.7f
         }
         return row
-    }
-
-    private fun showClipboardItemMenu(text: String, locked: Boolean) {
-        val options = arrayOf(if (locked) "باز کردن قفل" else "قفل کردن", "حذف")
-        android.app.AlertDialog.Builder(context)
-            .setTitle(text.replace("\n", " ").take(40))
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> { prefs.toggleClipboardLock(text); refreshClipboard() }
-                    1 -> {
-                        if (locked) android.widget.Toast.makeText(context, "ابتدا قفل را بردارید", android.widget.Toast.LENGTH_SHORT).show()
-                        else { prefs.removeClipboardItem(text); refreshClipboard() }
-                    }
-                }
-            }.show()
     }
 
     private fun showClipboard() {
@@ -324,12 +324,14 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             val text = cm.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.trim().orEmpty()
             if (text.isNotBlank()) prefs.addClipboardItem(text)
         } catch (_: Exception) {}
+        selectedClipText = null
         refreshClipboard()
         keyboardContent?.visibility = View.GONE
         clipboardView?.visibility = View.VISIBLE
     }
 
     private fun hideClipboard() {
+        selectedClipText = null
         clipboardView?.visibility = View.GONE
         keyboardContent?.visibility = View.VISIBLE
     }

@@ -7,7 +7,6 @@ import com.keynova.keyboard.R
 data class KeyboardTheme(
     val id: String,
     val name: String,
-    val category: ThemeCategory,
     @ColorInt val background: Int,
     @ColorInt val keyBg: Int,
     @ColorInt val keyBgPressed: Int,
@@ -17,39 +16,46 @@ data class KeyboardTheme(
     @ColorInt val accentPressed: Int,
     @ColorInt val text: Int,
     @ColorInt val textSecondary: Int,
-    @DrawableRes val keyDrawable: Int,
-    @DrawableRes val keySpecialDrawable: Int,
-    @DrawableRes val keyAccentDrawable: Int,
-    @DrawableRes val wallpaperDrawable: Int? = null,
+    @DrawableRes val keyDrawable: Int = R.drawable.bg_key,
+    @DrawableRes val keySpecialDrawable: Int = R.drawable.bg_key_special,
+    @DrawableRes val keyAccentDrawable: Int = R.drawable.bg_key_accent,
     val keyRadiusDp: Int = 10,
     val keyStroke: Boolean = false
 )
 
-enum class ThemeCategory { COLOR, WALLPAPER }
-
 object ThemeManager {
-    fun all(): List<KeyboardTheme> = colorThemes() + wallpaperThemes()
+    fun all(): List<KeyboardTheme> = themes
+    fun byId(id: String): KeyboardTheme = themes.find { it.id == id } ?: themes.first()
 
-    fun byId(id: String): KeyboardTheme = all().find { it.id == id } ?: all().first()
+    private fun c(
+        id: String, name: String,
+        bg: Long, k: Long, kp: Long, s: Long, sp: Long, a: Long, ap: Long, t: Long, ts: Long,
+        kd: Int = R.drawable.bg_key, sd: Int = R.drawable.bg_key_special, ad: Int = R.drawable.bg_key_accent,
+        r: Int = 10, st: Boolean = false
+    ) = KeyboardTheme(id, name, bg.i(), k.i(), kp.i(), s.i(), sp.i(), a.i(), ap.i(), t.i(), ts.i(), kd, sd, ad, r, st)
 
-    fun colorThemes(): List<KeyboardTheme> = listOf(
-        t("dark_gold", "طلایی تیره", ThemeCategory.COLOR, 0xFF1E1F22.toInt(), 0xFF2B2D31.toInt(), 0xFF3A3D42.toInt(), 0xFF24262A.toInt(), 0xFF33363B.toInt(), 0xFFD4A017.toInt(), 0xFFB8890F.toInt(), 0xFFFFFFFF.toInt(), 0xFFD0D0D0.toInt(), R.drawable.key_bg, R.drawable.key_bg_special, R.drawable.key_bg_accent),
-        t("light_blue", "آبی روشن", ThemeCategory.COLOR, 0xFFF2F5FA.toInt(), 0xFFFFFFFF.toInt(), 0xFFDCE8F7.toInt(), 0xFFE7EDF5.toInt(), 0xFFCFDBEC.toInt(), 0xFF2B7FFF.toInt(), 0xFF1E66D0.toInt(), 0xFF1A2433.toInt(), 0xFF516175.toInt(), R.drawable.key_bg_light, R.drawable.key_bg_light_special, R.drawable.key_bg_light_accent),
-        t("pure_black", "مشکی خالص", ThemeCategory.COLOR, 0xFF000000.toInt(), 0xFF1A1A1A.toInt(), 0xFF2A2A2A.toInt(), 0xFF111111.toInt(), 0xFF222222.toInt(), 0xFFFFFFFF.toInt(), 0xFFDDDDDD.toInt(), 0xFFFFFFFF.toInt(), 0xFFBBBBBB.toInt(), R.drawable.key_bg_black, R.drawable.key_bg_black_special, R.drawable.key_bg_black_accent),
-        t("blue_black", "آبی مشکی", ThemeCategory.COLOR, 0xFF0B1020.toInt(), 0xFF18233A.toInt(), 0xFF243454.toInt(), 0xFF121B2E.toInt(), 0xFF1E2D48.toInt(), 0xFF4DA3FF.toInt(), 0xFF2F82D8.toInt(), 0xFFEAF2FF.toInt(), 0xFFA9BDD8.toInt(), R.drawable.key_bg_blueblack, R.drawable.key_bg_blueblack_special, R.drawable.key_bg_blueblack_accent),
-        t("rose", "رز", ThemeCategory.COLOR, 0xFF1F141A.toInt(), 0xFF35222D.toInt(), 0xFF462E3B.toInt(), 0xFF2B1B24.toInt(), 0xFF3A2631.toInt(), 0xFFFF6FA3.toInt(), 0xFFE05588.toInt(), 0xFFFFF1F6.toInt(), 0xFFE3BFCF.toInt(), R.drawable.key_bg_rose, R.drawable.key_bg_rose_special, R.drawable.key_bg_rose_accent),
-        t("mint", "نعنایی", ThemeCategory.COLOR, 0xFFF1FAF7.toInt(), 0xFFFFFFFF.toInt(), 0xFFDDF1EA.toInt(), 0xFFE6F3EF.toInt(), 0xFFD1E8DF.toInt(), 0xFF1FA37A.toInt(), 0xFF178562.toInt(), 0xFF17352D.toInt(), 0xFF4B6A61.toInt(), R.drawable.key_bg_mint, R.drawable.key_bg_mint_special, R.drawable.key_bg_mint_accent),
-        t("purple_night", "بنفش شب", ThemeCategory.COLOR, 0xFF171322.toInt(), 0xFF27203A.toInt(), 0xFF352B4E.toInt(), 0xFF201A30.toInt(), 0xFF2D2542.toInt(), 0xFFB388FF.toInt(), 0xFF956CE0.toInt(), 0xFFF3EEFF.toInt(), 0xFFC7BDE0.toInt(), R.drawable.key_bg_purple, R.drawable.key_bg_purple_special, R.drawable.key_bg_purple_accent),
-        t("sand", "شنی", ThemeCategory.COLOR, 0xFFF7F1E6.toInt(), 0xFFFFFCF7.toInt(), 0xFFEDE0CC.toInt(), 0xFFF1E7D8.toInt(), 0xFFE5D4BB.toInt(), 0xFFB07A2A.toInt(), 0xFF94631D.toInt(), 0xFF2E2418.toInt(), 0xFF6B5A45.toInt(), R.drawable.key_bg_sand, R.drawable.key_bg_sand_special, R.drawable.key_bg_sand_accent),
+    private val themes = listOf(
+        c("dark_gold", "طلایی تیره", 0xFF10131A, 0xFF202634, 0xFF30384A, 0xFF171C28, 0xFF252C3A, 0xFFD4A72C, 0xFFB98A18, 0xFFF3F5F7, 0xFFBFC7D5),
+        c("midnight", "آبی نیمه‌شب", 0xFF0C1020, 0xFF1A2238, 0xFF26314D, 0xFF141B2E, 0xFF1F2942, 0xFF5B8CFF, 0xFF3E6FE0, 0xFFEAF0FF, 0xFFAAB9D6),
+        c("emerald", "زمردی", 0xFF0F1714, 0xFF1D2A24, 0xFF294038, 0xFF16211C, 0xFF22332C, 0xFF3CCB8F, 0xFF27A873, 0xFFEAF7F1, 0xFFB4CCC0),
+        c("rose", "رز", 0xFF181015, 0xFF2C1E26, 0xFF3D2834, 0xFF231720, 0xFF34212D, 0xFFFF6FA1, 0xFFE05286, 0xFFFFF0F5, 0xFFD6B8C6),
+        c("light", "روشن", 0xFFECEFF4, 0xFFFFFFFF, 0xFFDDE3EC, 0xFFDCE3ED, 0xFFCBD5E1, 0xFF2563EB, 0xFF1D4ED8, 0xFF1A2233, 0xFF5A6B82, st = true),
+        c("graphite", "گرافیت", 0xFF141414, 0xFF262626, 0xFF363636, 0xFF1D1D1D, 0xFF2D2D2D, 0xFFE0E0E0, 0xFFC0C0C0, 0xFFF5F5F5, 0xFFAAAAAA),
+        c("ocean", "فیروزه‌ای", 0xFF081821, 0xFF102A38, 0xFF183C50, 0xFF0C2230, 0xFF143447, 0xFF2DD4BF, 0xFF14B8A6, 0xFFE6FFFB, 0xFFA6D6D0),
+        c("violet", "بنفش", 0xFF140F1F, 0xFF241B38, 0xFF33274F, 0xFF1C1530, 0xFF2A2045, 0xFFA78BFA, 0xFF8B5CF6, 0xFFF5F3FF, 0xFFC4B5FD),
+        c("sunset", "غروب", 0xFF1A120D, 0xFF2E2118, 0xFF3D2D20, 0xFF241A13, 0xFF35261B, 0xFFFF8A5B, 0xFFE06A3A, 0xFFFFF4EE, 0xFFD8BBA8),
+        c("crimson", "زرشکی", 0xFF170D10, 0xFF2B181D, 0xFF3B2229, 0xFF221318, 0xFF331C23, 0xFFFF4D6D, 0xFFE03557, 0xFFFFF1F3, 0xFFD8B0BA),
+        c("sky", "آسمانی", 0xFF0B1620, 0xFF16293A, 0xFF203A52, 0xFF122230, 0xFF1B3347, 0xFF38BDF8, 0xFF0EA5E9, 0xFFF0FAFF, 0xFFB4D4E6),
+        c("lime", "لیمویی", 0xFF12160C, 0xFF222A16, 0xFF303C1F, 0xFF1B2212, 0xFF28331A, 0xFFA3E635, 0xFF84CC16, 0xFFF7FEE7, 0xFFCFE0A8),
+        c("sand", "شنی روشن", 0xFFF3EEE4, 0xFFFFFBF5, 0xFFE7DDCE, 0xFFE9DFD0, 0xFFDCCFBC, 0xFFB45309, 0xFF92400E, 0xFF2A2118, 0xFF7A6854, st = true),
+        c("lavender", "یاسی روشن", 0xFFF1EDF8, 0xFFFFFCFF, 0xFFE3DCEF0, 0xFFE4DBF0, 0xFFD6CAE6, 0xFF7C3AED, 0xFF6D28D9, 0xFF241B33, 0xFF72658A, st = true),
+        c("mint", "نعنایی روشن", 0xFFEDF7F2, 0xFFFFFFFF, 0xFFDCEEE4, 0xFFDCECE2, 0xFFCCE1D5, 0xFF059669, 0xFF047857, 0xFF18261F, 0xFF60786C, st = true),
+        c("coffee", "قهوه‌ای", 0xFF17120F, 0xFF2A211B, 0xFF392D25, 0xFF211A15, 0xFF30261F, 0xFFD6A25E, 0xFFBC8742, 0xFFF8F1E8, 0xFFD2C0AE),
+        c("navy_coral", "سرمه‌ای مرجانی", 0xFF0E1422, 0xFF1C2740, 0xFF283757, 0xFF162033, 0xFF22304A, 0xFFFF7A90, 0xFFEF5D76, 0xFFF4F7FF, 0xFFB7C3DA),
+        c("slate_teal", "اسلیت سبزآبی", 0xFF11181B, 0xFF1E2C31, 0xFF2A3C42, 0xFF182429, 0xFF24343A, 0xFF5EEAD4, 0xFF2DD4BF, 0xFFEDFDFC, 0xFFAAC7C3),
+        c("plum_gold", "بادمجانی طلایی", 0xFF180F19, 0xFF2B1C2E, 0xFF3A2740, 0xFF221524, 0xFF321F35, 0xFFF0C75E, 0xFFD9AD3D, 0xFFFFF8EE, 0xFFD8C8A8),
+        c("ice_blue", "یخی آبی", 0xFFEAF2FA, 0xFFFFFFFF, 0xFFD8E6F3, 0xFFDCE8F3, 0xFFCADAE8, 0xFF0284C7, 0xFF0369A1, 0xFF172534, 0xFF627A90, st = true),
     )
 
-    fun wallpaperThemes(): List<KeyboardTheme> = listOf(
-        t("wp_galaxy", "کهکشان نئونی", ThemeCategory.WALLPAPER, 0xCC120A24.toInt(), 0xCC2A1E45.toInt(), 0xCC3A2A60.toInt(), 0xCC1E1736.toInt(), 0xCC2E2450.toInt(), 0xFFD59CFF.toInt(), 0xFFB87AEF.toInt(), 0xFFF8F3FF.toInt(), 0xFFDCCCFF.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_galaxy),
-        t("wp_ocean", "اقیانوس", ThemeCategory.WALLPAPER, 0xCC0A2236.toInt(), 0xCC1C3A57.toInt(), 0xCC2A5275.toInt(), 0xCC152D44.toInt(), 0xCC234661.toInt(), 0xFF58C9FF.toInt(), 0xFF3AAFE6.toInt(), 0xFFFFFFFF.toInt(), 0xFFD4E8F5.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_ocean),
-        t("wp_sunset", "غروب کوهستان", ThemeCategory.WALLPAPER, 0xCC2A1420.toInt(), 0xCC4A2438.toInt(), 0xCC63324C.toInt(), 0xCC3A1C2D.toInt(), 0xCC552A40.toInt(), 0xFFFFB36B.toInt(), 0xFFE89243.toInt(), 0xFFFFF5EE.toInt(), 0xFFF0D2C0.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_sunset),
-        t("wp_forest", "جنگل مه‌آلود", ThemeCategory.WALLPAPER, 0xCC101F16.toInt(), 0xCC22382A.toInt(), 0xCC30503A.toInt(), 0xCC1A2C21.toInt(), 0xCC294232.toInt(), 0xFF8BE07A.toInt(), 0xFF6EC75D.toInt(), 0xFFF1FFF0.toInt(), 0xFFCFE0CD.toInt(), R.drawable.key_bg_wp, R.drawable.key_bg_wp_special, R.drawable.key_bg_wp_accent, R.drawable.wallpaper_forest),
-    )
-
-    private fun t(id: String, name: String, cat: ThemeCategory, bg: Int, k: Int, kp: Int, ks: Int, ksp: Int, a: Int, ap: Int, tx: Int, ts: Int, kd: Int, ksd: Int, kad: Int, wp: Int? = null) =
-        KeyboardTheme(id, name, cat, bg, k, kp, ks, ksp, a, ap, tx, ts, kd, ksd, kad, wp)
+    private fun Long.i() = this.toInt()
 }

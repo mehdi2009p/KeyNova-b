@@ -66,7 +66,5 @@
     <string name="setting_suggestions_title">پیشنهاد کلمه</string>
     <string name="setting_suggestions_desc">نمایش ۳ پیشنهاد زنده، تکمیل کلمه و کلمه بعدی.</string>
     <string name="setting_theme_title">تم کیبورد</string>
-    <string name="setting_theme_desc">رنگ، تصویر زمینه و سبک دکمه‌ها را انتخاب کنید.</string>
-    <string name="theme_color_section">تم‌های رنگی</string>
-    <string name="theme_wallpaper_section">تم‌های تصویری</string>
+    <string name="setting_theme_desc">رنگ و ترکیب‌بندی کیبورد را انتخاب کنید.</string>
 </resources>
