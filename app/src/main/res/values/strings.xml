@@ -19,4 +19,15 @@
     <string name="status_not_enabled">KeyNova هنوز فعال نشده است.</string>
     <string name="status_selected">KeyNova کیبورد فعلی شماست.</string>
     <string name="status_not_selected">KeyNova فعال است اما انتخاب نشده است.</string>
+
+    <string name="settings_section_title">تنظیمات کیبورد</string>
+    <string name="setting_vibration_title">لرزش هنگام تایپ</string>
+    <string name="setting_vibration_desc">با لمس کلیدها لرزش کوتاه احساس شود.</string>
+    <string name="setting_sound_title">صدای کلید</string>
+    <string name="setting_sound_desc">هنگام فشردن کلید صدای استاندارد پخش شود.</string>
+    <string name="setting_height_title">ارتفاع کیبورد</string>
+    <string name="setting_height_desc">ارتفاع دکمه‌ها را برای راحتی تایپ تنظیم کنید.</string>
+    <string name="height_small">کم</string>
+    <string name="height_default">متوسط</string>
+    <string name="height_large">زیاد</string>
 </resources>

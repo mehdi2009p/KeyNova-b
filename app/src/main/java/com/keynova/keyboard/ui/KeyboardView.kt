@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
@@ -19,6 +21,7 @@ import com.keynova.keyboard.layout.KeyboardLayouts
 import com.keynova.keyboard.logic.KeyboardController
 import com.keynova.keyboard.model.Key
 import com.keynova.keyboard.model.KeyAction
+import com.keynova.keyboard.settings.KeyboardPrefs
 import kotlin.math.abs
 
 class KeyboardView(context: Context) : LinearLayout(context) {
@@ -32,6 +35,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private val handler = Handler(Looper.getMainLooper())
     private var longPressFired = false
     private var popup: PopupWindow? = null
+    private val prefs = KeyboardPrefs(context)
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     init {
         orientation = VERTICAL
@@ -41,6 +46,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         setPadding(pad, dp(10), pad, dp(38))
         isClickable = true
         isFocusable = false
+        isHapticFeedbackEnabled = true
     }
 
     fun render() {
@@ -66,12 +72,13 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun createKeyView(key: Key): View {
+        val keyH = prefs.keyHeightDp
         val container = android.widget.FrameLayout(context).apply {
-            val lp = LayoutParams(0, dp(58), key.weight)
+            val lp = LayoutParams(0, dp(keyH), key.weight)
             val hGap = dp(2)
             lp.setMargins(hGap, 0, hGap, 0)
             layoutParams = lp
-            minimumHeight = dp(58)
+            minimumHeight = dp(keyH)
             setBackgroundResource(
                 when {
                     key.isAccent -> R.drawable.key_bg_accent
@@ -131,6 +138,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     @SuppressLint("ClickableViewAccessibility")
     private fun bindBackspace(v: View) {
         v.setOnTouchListener { view, event ->
+            if (event.actionMasked == MotionEvent.ACTION_DOWN) provideFeedback(view)
             val handled = controller?.onBackspaceTouch(event) ?: false
             if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
                 view.performClick()
@@ -148,6 +156,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.x
                     switched = false
+                    provideFeedback(view)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -175,6 +184,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressFired = false
+                    provideFeedback(view)
                     if (key.popupActions.isNotEmpty()) {
                         handler.postDelayed({
                             longPressFired = true
@@ -240,6 +250,15 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private fun dismissPopup() {
         popup?.dismiss()
         popup = null
+    }
+
+    private fun provideFeedback(view: View) {
+        if (prefs.vibrationEnabled) {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        }
+        if (prefs.soundEnabled) {
+            audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, 0.6f)
+        }
     }
 
     private fun dp(value: Int): Int =
