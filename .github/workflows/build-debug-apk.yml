@@ -33,10 +33,23 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;35.0.0"
 
       - name: Build debug APK
+        id: build
         run: |
           set -o pipefail
           chmod +x gradlew
           ./gradlew :app:assembleDebug --console=plain --stacktrace 2>&1 | tee build.log
+
+      - name: Print build errors
+        if: always()
+        run: |
+          echo "## Build log tail" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 200 build.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "## Grep errors" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -n "e: \|FAILURE\|error:\|Exception" build.log | tail -n 120 >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Upload debug APK
         if: success()
