@@ -35,6 +35,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     init {
         orientation = VERTICAL
+        layoutDirection = View.LAYOUT_DIRECTION_LTR
         setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_background))
         val pad = dp(4)
         setPadding(pad, dp(8), pad, dp(36))
