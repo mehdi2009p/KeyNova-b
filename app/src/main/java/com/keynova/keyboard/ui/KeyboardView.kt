@@ -13,6 +13,8 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.widget.HorizontalScrollView
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -20,11 +22,14 @@ import androidx.core.content.ContextCompat
 import com.keynova.keyboard.R
 import com.keynova.keyboard.layout.KeyboardLayouts
 import com.keynova.keyboard.logic.KeyboardController
+import com.keynova.keyboard.logic.SuggestionEngine
 import com.keynova.keyboard.model.Key
 import com.keynova.keyboard.model.KeyAction
 import com.keynova.keyboard.model.KeyboardLanguage
 import com.keynova.keyboard.model.KeyboardMode
 import com.keynova.keyboard.settings.KeyboardPrefs
+import com.keynova.keyboard.theme.KeyboardTheme
+import com.keynova.keyboard.theme.ThemeManager
 import kotlin.math.abs
 
 class KeyboardView(context: Context) : LinearLayout(context) {
@@ -40,6 +45,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private var popup: PopupWindow? = null
     private val prefs = KeyboardPrefs(context)
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val suggestions = SuggestionEngine(context)
+    private var suggestionBar: LinearLayout? = null
+    private var clipboardPanel: LinearLayout? = null
     private var keyPreview: PopupWindow? = null
     @Volatile private var vibrationEnabled = prefs.vibrationEnabled
     @Volatile private var soundEnabled = prefs.soundEnabled
@@ -56,6 +64,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     @Volatile private var longPressDelayMs = prefs.longPressDelayMs
     @Volatile private var soundVolumePercent = prefs.soundVolumePercent
     @Volatile private var bottomPaddingDp = prefs.bottomPaddingDp
+    @Volatile private var theme: KeyboardTheme = ThemeManager.byId(prefs.themeId)
+    @Volatile private var suggestionsEnabled = prefs.suggestionsEnabled
     private var lastSpaceTapMs = 0L
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
@@ -69,6 +79,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             KeyboardPrefs.KEY_SPACE_LABEL -> { spaceLabelMode = prefs.spaceLabelMode; post { render() } }
             KeyboardPrefs.KEY_LONG_PRESS_DELAY -> longPressDelayMs = prefs.longPressDelayMs
             KeyboardPrefs.KEY_SOUND_VOLUME -> soundVolumePercent = prefs.soundVolumePercent
+            KeyboardPrefs.KEY_THEME -> { theme = ThemeManager.byId(prefs.themeId); post { applyTheme(); render() } }
+            KeyboardPrefs.KEY_SUGGESTIONS -> { suggestionsEnabled = prefs.suggestionsEnabled; post { render() } }
+            KeyboardPrefs.KEY_CLIPBOARD -> { post { refreshClipboard() } }
             KeyboardPrefs.KEY_BOTTOM_PADDING, KeyboardPrefs.KEY_HEIGHT, KeyboardPrefs.KEY_GAP, KeyboardPrefs.KEY_TEXT_SIZE, KeyboardPrefs.KEY_NUMBER_ROW -> {
                 keyHeightDp = prefs.keyHeightDp; keyGapDp = prefs.keyGapDp; keyTextSizeSp = prefs.keyTextSizeSp
                 numberRowEnabled = prefs.numberRowEnabled; bottomPaddingDp = prefs.bottomPaddingDp
@@ -80,12 +93,20 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     init {
         orientation = VERTICAL
         layoutDirection = View.LAYOUT_DIRECTION_LTR
-        setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_background))
         updatePadding()
+        applyTheme()
         isClickable = true
         isFocusable = false
         isHapticFeedbackEnabled = true
         prefs.registerListener(prefListener)
+    }
+
+    private fun applyTheme() {
+        theme.wallpaperDrawable?.let { res ->
+            setBackgroundResource(res)
+        } ?: run {
+            setBackgroundColor(theme.background)
+        }
     }
 
     private fun updatePadding() {
@@ -103,11 +124,126 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         dismissKeyPreview()
         removeAllViews()
         val ctrl = controller ?: return
+        addView(createTopBar())
         val rows = KeyboardLayouts.rowsFor(ctrl.mode, ctrl.language, ctrl.shiftState).toMutableList()
         if (numberRowEnabled && ctrl.mode == KeyboardMode.LETTERS) {
             rows.add(0, numberRow(ctrl.language))
         }
         rows.forEach { rowKeys -> addView(createRow(rowKeys)) }
+        updateSuggestions()
+    }
+
+    fun refreshClipboard() {
+        val panel = clipboardPanel ?: return
+        panel.removeAllViews()
+        val items = prefs.clipboardHistory
+        if (items.isEmpty()) {
+            panel.addView(makeChip("کلیپ‌بورد خالی است", false) {})
+            return
+        }
+        items.take(20).forEach { item ->
+            panel.addView(makeChip(item.replace("\n", " ").take(28), true) {
+                controller?.currentInputConnection()?.commitText(item, 1)
+            })
+        }
+    }
+
+    private fun createTopBar(): View {
+        val wrap = LinearLayout(context).apply {
+            orientation = VERTICAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+        }
+        val row = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(40))
+        }
+        val clipBtn = TextView(context).apply {
+            text = "📋"
+            textSize = 18f
+            gravity = Gravity.CENTER
+            setTextColor(theme.text)
+            layoutParams = LayoutParams(dp(44), LayoutParams.MATCH_PARENT)
+            setOnClickListener { toggleClipboard() }
+        }
+        val sugScroll = HorizontalScrollView(context).apply {
+            isHorizontalScrollBarEnabled = false
+            layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
+        }
+        val sugRow = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+        }
+        sugScroll.addView(sugRow)
+        suggestionBar = sugRow
+        row.addView(clipBtn)
+        row.addView(sugScroll)
+        wrap.addView(row)
+
+        val clipScroll = HorizontalScrollView(context).apply {
+            isHorizontalScrollBarEnabled = false
+            visibility = View.GONE
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(42))
+        }
+        val clipRow = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
+        }
+        clipScroll.addView(clipRow)
+        clipboardPanel = clipRow
+        wrap.tag = clipScroll
+        wrap.addView(clipScroll)
+        refreshClipboard()
+        return wrap
+    }
+
+    private fun toggleClipboard() {
+        val wrap = suggestionBar?.parent?.parent?.parent as? LinearLayout ?: return
+        val clipScroll = wrap.tag as? View ?: return
+        clipScroll.visibility = if (clipScroll.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        if (clipScroll.visibility == View.VISIBLE) refreshClipboard()
+    }
+
+    private fun makeChip(text: String, clickable: Boolean, onClick: () -> Unit): View {
+        return TextView(context).apply {
+            this.text = text
+            setTextColor(theme.text)
+            textSize = 14f
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(dp(10), dp(6), dp(10), dp(6))
+            setBackgroundResource(theme.keySpecialDrawable)
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply { setMargins(dp(3), dp(2), dp(3), dp(2)) }
+            if (clickable) setOnClickListener { onClick() }
+        }
+    }
+
+    fun updateSuggestions() {
+        val bar = suggestionBar ?: return
+        bar.removeAllViews()
+        val ctrl = controller ?: return
+        if (!suggestionsEnabled || ctrl.mode != KeyboardMode.LETTERS) return
+        val ic = ctrl.currentInputConnection() ?: return
+        val before = ic.getTextBeforeCursor(40, 0)?.toString().orEmpty()
+        val current = before.takeLastWhile { !it.isWhitespace() }
+        val afterSpace = before.isEmpty() || before.last().isWhitespace()
+        if (current.isNotEmpty()) suggestions.learn(current)
+        val list = suggestions.suggest(current, ctrl.language, afterSpace)
+        list.forEach { word ->
+            bar.addView(makeChip(word, true) { applySuggestion(word, current) })
+        }
+    }
+
+    private fun applySuggestion(word: String, current: String) {
+        val ic = controller?.currentInputConnection() ?: return
+        if (current.isNotEmpty()) {
+            ic.deleteSurroundingText(current.length, 0)
+        }
+        ic.commitText("$word ", 1)
+        suggestions.learn(word)
+        updateSuggestions()
     }
 
     private fun numberRow(language: KeyboardLanguage): List<Key> {
@@ -139,9 +275,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             minimumHeight = dp(keyH)
             setBackgroundResource(
                 when {
-                    key.isAccent -> R.drawable.key_bg_accent
-                    key.isSpecial -> R.drawable.key_bg_special
-                    else -> R.drawable.key_bg
+                    key.isAccent -> theme.keyAccentDrawable
+                    key.isSpecial -> theme.keySpecialDrawable
+                    else -> theme.keyDrawable
                 }
             )
         }
@@ -178,7 +314,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         if (showHintsEnabled && key.longPressLabel != null && key.popupActions.isEmpty()) {
             val hint = TextView(context).apply {
                 text = key.longPressLabel
-                setTextColor(ContextCompat.getColor(context, R.color.keynova_text_secondary))
+                setTextColor(theme.textSecondary)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
                 typeface = Typeface.DEFAULT_BOLD
                 layoutParams = android.widget.FrameLayout.LayoutParams(

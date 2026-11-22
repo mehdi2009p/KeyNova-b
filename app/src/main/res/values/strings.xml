@@ -24,6 +24,7 @@
     <string name="home_welcome">خوش آمدید به KeyNova</string>
     <string name="home_subtitle">کیبورد فارسی، سریع و سبک</string>
     <string name="menu_settings">تنظیمات کیبورد</string>
+    <string name="menu_settings_desc">تم، تایپ، پیشنهاد کلمه و ظاهر</string>
     <string name="menu_test">تست کیبورد</string>
     <string name="menu_enable">فعال‌سازی کیبورد</string>
     <string name="menu_select">انتخاب کیبورد</string>
@@ -62,4 +63,10 @@
     <string name="setting_long_press_title">تأخیر نگه داشتن کلید</string>
     <string name="setting_sound_volume_title">بلندی صدای کلید</string>
     <string name="setting_bottom_padding_title">فاصله پایین کیبورد</string>
+    <string name="setting_suggestions_title">پیشنهاد کلمه</string>
+    <string name="setting_suggestions_desc">نمایش ۳ پیشنهاد زنده، تکمیل کلمه و کلمه بعدی.</string>
+    <string name="setting_theme_title">تم کیبورد</string>
+    <string name="setting_theme_desc">رنگ، تصویر زمینه و سبک دکمه‌ها را انتخاب کنید.</string>
+    <string name="theme_color_section">تم‌های رنگی</string>
+    <string name="theme_wallpaper_section">تم‌های تصویری</string>
 </resources>

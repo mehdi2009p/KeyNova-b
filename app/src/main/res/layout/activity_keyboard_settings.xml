@@ -29,6 +29,9 @@
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_typing" />
 
             <LinearLayout style="@style/SettingsCard">
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchSuggestions" style="@style/SettingsSwitch" android:text="@string/setting_suggestions_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_suggestions_desc" />
+                <View style="@style/SettingsDivider" />
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchVibration" style="@style/SettingsSwitch" android:text="@string/setting_vibration_title" />
                 <TextView style="@style/SettingsDesc" android:text="@string/setting_vibration_desc" />
                 <View style="@style/SettingsDivider" />
@@ -75,6 +78,14 @@
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_appearance" />
 
             <LinearLayout style="@style/SettingsCard">
+                <TextView style="@style/SettingsLabel" android:text="@string/setting_theme_title" />
+                <TextView style="@style/SettingsDesc" android:text="@string/setting_theme_desc" android:layout_marginBottom="8dp" />
+                <TextView style="@style/SettingsDesc" android:text="@string/theme_color_section" android:textColor="@color/keynova_accent" />
+                <GridLayout android:id="@+id/themeColorGrid" android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="2" android:layout_marginTop="6dp" />
+                <View style="@style/SettingsDivider" />
+                <TextView style="@style/SettingsDesc" android:text="@string/theme_wallpaper_section" android:textColor="@color/keynova_accent" />
+                <GridLayout android:id="@+id/themeWallpaperGrid" android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="2" android:layout_marginTop="6dp" />
+                <View style="@style/SettingsDivider" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <TextView style="@style/SettingsLabel" android:layout_width="0dp" android:layout_weight="1" android:text="@string/setting_height_title" />
                     <TextView android:id="@+id/valueHeight" style="@style/SettingsValue" />

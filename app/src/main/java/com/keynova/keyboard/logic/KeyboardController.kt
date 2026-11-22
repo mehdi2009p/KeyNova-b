@@ -15,7 +15,8 @@ class KeyboardController(
     private val editorInfoProvider: () -> EditorInfo?,
     private val onStateChanged: () -> Unit,
     private val onOpenSettings: () -> Unit = {},
-    private val autoCapitalizeProvider: () -> Boolean = { true }
+    private val autoCapitalizeProvider: () -> Boolean = { true },
+    private val onTextChanged: () -> Unit = {}
 ) {
     var mode: KeyboardMode = KeyboardMode.LETTERS
         private set
@@ -68,11 +69,12 @@ class KeyboardController(
                     onStateChanged()
                 }
                 maybeAutoCapitalize(action.value)
+                onTextChanged()
             }
-            KeyAction.Space -> { ic?.commitText(" ", 1); maybeAutoCapitalize(" ") }
-            KeyAction.Zwnj -> ic?.commitText("\u200C", 1)
-            KeyAction.Enter -> if (ic != null) handleEnter(ic)
-            KeyAction.Backspace -> deleteOnce()
+            KeyAction.Space -> { ic?.commitText(" ", 1); maybeAutoCapitalize(" "); onTextChanged() }
+            KeyAction.Zwnj -> { ic?.commitText("\u200C", 1); onTextChanged() }
+            KeyAction.Enter -> { if (ic != null) handleEnter(ic); onTextChanged() }
+            KeyAction.Backspace -> { deleteOnce(); onTextChanged() }
             KeyAction.Shift -> {
                 if (mode == KeyboardMode.LETTERS && language == KeyboardLanguage.EN) {
                     shiftState = if (shiftState == ShiftState.OFF) ShiftState.ON else ShiftState.OFF

@@ -12,21 +12,27 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/home_welcome"
-            android:textColor="@color/keynova_accent"
-            android:textSize="28sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/home_subtitle"
-            android:textColor="@color/keynova_text_secondary"
-            android:textSize="14sp" />
+            android:background="@drawable/home_hero_bg"
+            android:orientation="vertical"
+            android:padding="20dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home_welcome"
+                android:textColor="@color/keynova_text"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/home_subtitle"
+                android:textColor="@color/keynova_text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -81,7 +87,7 @@
             android:id="@+id/cardSettings"
             style="@style/HomeCard">
             <TextView style="@style/HomeCardTitle" android:text="@string/menu_settings" />
-            <TextView style="@style/HomeCardDesc" android:text="@string/setting_height_title" />
+            <TextView style="@style/HomeCardDesc" android:text="@string/menu_settings_desc" />
         </LinearLayout>
 
         <LinearLayout

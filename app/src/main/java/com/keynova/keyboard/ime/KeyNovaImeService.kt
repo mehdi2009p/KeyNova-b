@@ -1,10 +1,13 @@
 package com.keynova.keyboard.ime
 
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import com.keynova.keyboard.logic.KeyboardController
+import com.keynova.keyboard.settings.KeyboardPrefs
 import com.keynova.keyboard.ui.KeyboardView
 import com.keynova.keyboard.ui.SettingsActivity
 
@@ -12,10 +15,12 @@ class KeyNovaImeService : InputMethodService() {
 
     private var keyboardView: KeyboardView? = null
     private lateinit var controller: KeyboardController
+    private lateinit var prefs: KeyboardPrefs
+    private var clipboardListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 
     override fun onCreate() {
         super.onCreate()
-        val prefs = com.keynova.keyboard.settings.KeyboardPrefs(this)
+        prefs = KeyboardPrefs(this)
         controller = KeyboardController(
             inputConnectionProvider = { currentInputConnection },
             editorInfoProvider = { currentInputEditorInfo },
@@ -26,8 +31,17 @@ class KeyNovaImeService : InputMethodService() {
                 }
                 startActivity(intent)
             },
-            autoCapitalizeProvider = { prefs.autoCapitalize }
+            autoCapitalizeProvider = { prefs.autoCapitalize },
+            onTextChanged = { keyboardView?.post { keyboardView?.updateSuggestions() } }
         )
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
+            val text = cm.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()?.trim().orEmpty()
+            if (text.isNotBlank()) {
+                prefs.addClipboardItem(text)
+                keyboardView?.post { keyboardView?.refreshClipboard() }
+            }
+        }.also { cm.addPrimaryClipChangedListener(it) }
     }
 
     override fun onCreateInputView(): View {
@@ -54,6 +68,8 @@ class KeyNovaImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        clipboardListener?.let { cm?.removePrimaryClipChangedListener(it) }
         if (::controller.isInitialized) {
             controller.stopBackspaceRepeat()
         }

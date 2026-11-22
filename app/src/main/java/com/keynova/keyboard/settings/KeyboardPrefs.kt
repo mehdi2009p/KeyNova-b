@@ -2,6 +2,8 @@ package com.keynova.keyboard.settings
 
 import android.content.Context
 import android.content.SharedPreferences
+import org.json.JSONArray
+import org.json.JSONObject
 
 class KeyboardPrefs(context: Context) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -72,6 +74,37 @@ class KeyboardPrefs(context: Context) {
         get() = prefs.getInt(KEY_BOTTOM_PADDING, 38).coerceIn(0, 80)
         set(value) = prefs.edit().putInt(KEY_BOTTOM_PADDING, value.coerceIn(0, 80)).apply()
 
+    var themeId: String
+        get() = prefs.getString(KEY_THEME, "dark_gold") ?: "dark_gold"
+        set(value) = prefs.edit().putString(KEY_THEME, value).apply()
+
+    var suggestionsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SUGGESTIONS, true)
+        set(value) = prefs.edit().putBoolean(KEY_SUGGESTIONS, value).apply()
+
+    var clipboardHistory: List<String>
+        get() {
+            val raw = prefs.getString(KEY_CLIPBOARD, "[]") ?: "[]"
+            return runCatching {
+                val arr = JSONArray(raw)
+                List(arr.length()) { arr.getString(it) }.filter { it.isNotBlank() }.take(20)
+            }.getOrDefault(emptyList())
+        }
+        set(value) {
+            val arr = JSONArray()
+            value.filter { it.isNotBlank() }.distinct().take(20).forEach { arr.put(it) }
+            prefs.edit().putString(KEY_CLIPBOARD, arr.toString()).apply()
+        }
+
+    fun addClipboardItem(text: String) {
+        val clean = text.trim().take(500)
+        if (clean.isBlank()) return
+        val current = clipboardHistory.toMutableList()
+        current.remove(clean)
+        current.add(0, clean)
+        clipboardHistory = current
+    }
+
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
         prefs.registerOnSharedPreferenceChangeListener(listener)
     }
@@ -99,6 +132,9 @@ class KeyboardPrefs(context: Context) {
         const val KEY_LONG_PRESS_DELAY = "long_press_delay_ms"
         const val KEY_SOUND_VOLUME = "sound_volume_percent"
         const val KEY_BOTTOM_PADDING = "bottom_padding_dp"
+        const val KEY_THEME = "theme_id"
+        const val KEY_SUGGESTIONS = "suggestions_enabled"
+        const val KEY_CLIPBOARD = "clipboard_history"
         const val DEFAULT_HEIGHT_DP = 58
         const val MIN_HEIGHT_DP = 48
         const val MAX_HEIGHT_DP = 68
