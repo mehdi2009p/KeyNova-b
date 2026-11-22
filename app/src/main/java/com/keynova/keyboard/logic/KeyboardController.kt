@@ -59,13 +59,21 @@ class KeyboardController(
             KeyAction.Enter -> if (ic != null) handleEnter(ic)
             KeyAction.Backspace -> deleteOnce()
             KeyAction.Shift -> {
-                if (mode == KeyboardMode.LETTERS) {
+                if (mode == KeyboardMode.LETTERS && language == KeyboardLanguage.EN) {
                     shiftState = if (shiftState == ShiftState.OFF) ShiftState.ON else ShiftState.OFF
                     onStateChanged()
                 }
             }
             KeyAction.ModeSymbols -> {
                 mode = KeyboardMode.SYMBOLS
+                onStateChanged()
+            }
+            KeyAction.ModeSymbols2 -> {
+                mode = KeyboardMode.SYMBOLS2
+                onStateChanged()
+            }
+            KeyAction.ModeNumpad -> {
+                mode = KeyboardMode.NUMPAD
                 onStateChanged()
             }
             KeyAction.ModeLetters -> {

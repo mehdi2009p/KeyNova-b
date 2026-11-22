@@ -7,6 +7,8 @@ sealed interface KeyAction {
     data object Enter : KeyAction
     data object Space : KeyAction
     data object ModeSymbols : KeyAction
+    data object ModeSymbols2 : KeyAction
+    data object ModeNumpad : KeyAction
     data object ModeLetters : KeyAction
     data object SwitchLanguage : KeyAction
     data object Zwnj : KeyAction
@@ -20,12 +22,15 @@ data class Key(
     val isSpecial: Boolean = false,
     val isAccent: Boolean = false,
     val longPressLabel: String? = null,
-    val longPressAction: KeyAction? = null
+    val longPressAction: KeyAction? = null,
+    val popupActions: List<Pair<String, KeyAction>> = emptyList()
 )
 
 enum class KeyboardMode {
     LETTERS,
-    SYMBOLS
+    SYMBOLS,
+    SYMBOLS2,
+    NUMPAD
 }
 
 enum class KeyboardLanguage {
