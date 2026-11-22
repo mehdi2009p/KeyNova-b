@@ -38,7 +38,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         layoutDirection = View.LAYOUT_DIRECTION_LTR
         setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_background))
         val pad = dp(4)
-        setPadding(pad, dp(6), pad, dp(24))
+        setPadding(pad, dp(8), pad, dp(30))
         isClickable = true
         isFocusable = false
     }
@@ -67,11 +67,11 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     @SuppressLint("ClickableViewAccessibility")
     private fun createKeyView(key: Key): View {
         val container = android.widget.FrameLayout(context).apply {
-            val lp = LayoutParams(0, dp(48), key.weight)
+            val lp = LayoutParams(0, dp(52), key.weight)
             val hGap = dp(2)
             lp.setMargins(hGap, 0, hGap, 0)
             layoutParams = lp
-            minimumHeight = dp(48)
+            minimumHeight = dp(52)
             setBackgroundResource(
                 when {
                     key.isAccent -> R.drawable.key_bg_accent
@@ -93,7 +93,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 else -> key.label
             }
             setTextColor(ContextCompat.getColor(context, R.color.keynova_text))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 3) 11f else 18f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, if (key.label.length > 3) 12f else 20f)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             isAllCaps = false
@@ -101,7 +101,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT
             )
-            setPadding(dp(2), dp(6), dp(2), dp(6))
+            setPadding(dp(3), dp(7), dp(3), dp(7))
         }
         container.addView(tv)
 
