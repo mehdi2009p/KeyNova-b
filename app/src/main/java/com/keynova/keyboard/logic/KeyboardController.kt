@@ -82,11 +82,11 @@ class KeyboardController(
                 }
             }
             KeyAction.ModeSymbols -> {
-                mode = KeyboardMode.SYMBOLS
+                mode = if (mode == KeyboardMode.SYMBOLS) KeyboardMode.LETTERS else KeyboardMode.SYMBOLS
                 onStateChanged()
             }
             KeyAction.ModeSymbols2 -> {
-                mode = KeyboardMode.SYMBOLS2
+                mode = if (mode == KeyboardMode.SYMBOLS2) KeyboardMode.LETTERS else KeyboardMode.SYMBOLS2
                 onStateChanged()
             }
             KeyAction.ModeNumpad -> {

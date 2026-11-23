@@ -20,25 +20,25 @@ object KeyboardLayouts {
     private fun persianRows(): List<List<Key>> {
         // Rows ordered for LTR rendering to produce standard Persian visual layout
         val row1 = listOf(
-            fa("ص", "ض"), fa("ث"), fa("ق"), fa("ف"), fa("ع", "غ"),
-            fa("ه"), fa("خ"), fa("ح"), fa("ج"), fa("چ")
+            fa("ص", "ض"), fa("ث", "﷼"), fa("ق"), fa("ف", "ڤ"), fa("ع", "غ"),
+            fa("ه", "ة"), fa("خ"), fa("ح"), fa("ج"), fa("چ")
         )
         val row2 = listOf(
-            fa("ش"), fa("س"), fa("ی"), fa("ب"), fa("ل"),
-            fa("ا"), fa("ت"), fa("ن"), fa("م"), fa("پ")
+            fa("ش"), fa("س"), fa("ی", "ئ"), fa("ب"), fa("ل"),
+            fa("ا", "آ"), fa("ت"), fa("ن"), fa("م"), fa("پ")
         )
         val row3 = listOf(
             fa("ظ"), fa("ط"), fa("ز", "ژ"), fa("ر"), fa("د", "ذ"),
-            fa("و"), fa("ک"), fa("گ"),
+            fa("و", "ؤ"), fa("ک"), fa("گ"),
             Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true)
         )
         val row4 = listOf(
-            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
-            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj),
-            Key(label = "فاصله", action = KeyAction.Space, weight = 3.6f),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj, popupActions = symbolMenuPopup(true)),
+            Key(label = "فاصله", action = KeyAction.Space, weight = 3.5f),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
-            Key(label = "↵", action = KeyAction.Enter, weight = 2.0f, isSpecial = true, isAccent = true)
+            Key(label = "↵", action = KeyAction.Enter, weight = 1.8f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -53,17 +53,17 @@ object KeyboardLayouts {
         val row1 = "qwertyuiop".map { c(it) }
         val row2 = "asdfghjkl".map { c(it) }
         val row3 = buildList {
-            add(Key(label = "⇧", action = KeyAction.Shift, weight = 1.5f, isSpecial = true, isAccent = upper))
+            add(Key(label = "⇧", action = KeyAction.Shift, weight = 1.35f, isSpecial = true, isAccent = upper))
             "zxcvbnm".forEach { add(c(it)) }
-            add(Key(label = "⌫", action = KeyAction.Backspace, weight = 1.5f, isSpecial = true))
+            add(Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true))
         }
         val row4 = listOf(
-            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.0f, isSpecial = true),
+            Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
-            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f),
-            Key(label = "space", action = KeyAction.Space, weight = 3.6f),
+            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f, popupActions = symbolMenuPopup(false)),
+            Key(label = "space", action = KeyAction.Space, weight = 3.5f),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = englishDotPopup()),
-            Key(label = "↵", action = KeyAction.Enter, weight = 2.0f, isSpecial = true, isAccent = true)
+            Key(label = "↵", action = KeyAction.Enter, weight = 1.8f, isSpecial = true, isAccent = true)
         )
         return listOf(row1, row2, row3, row4)
     }
@@ -82,44 +82,41 @@ object KeyboardLayouts {
         }
         val row3 = if (!secondary) {
             listOf(
-                Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true),
                 Key("*", KeyAction.Character("*")),
                 Key("\"", KeyAction.Character("\"")),
                 Key("'", KeyAction.Character("'")),
                 Key(":", KeyAction.Character(":")),
                 if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";")),
                 Key("!", KeyAction.Character("!")),
-                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?"))
+                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?")),
+                Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true)
             )
         } else {
             listOf(
-                Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true),
                 Key("_", KeyAction.Character("_")),
                 Key("|", KeyAction.Character("|")),
                 Key("~", KeyAction.Character("~")),
                 Key("<", KeyAction.Character("<")),
                 Key(">", KeyAction.Character(">")),
                 Key("€", KeyAction.Character("€")),
-                Key("•", KeyAction.Character("•"))
+                Key("•", KeyAction.Character("•")),
+                Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true)
             )
         }
         val row4 = listOf(
-            Key("#+=", KeyAction.ModeSymbols2, 1.0f, isSpecial = true),
+            Key(abcLabel, KeyAction.ModeLetters, 1.1f, isSpecial = true),
             Key("⌨", KeyAction.ModeNumpad, 1.0f, isSpecial = true),
-            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null),
-            Key(space, KeyAction.Space, 3.6f),
+            Key(comma, KeyAction.Character(comma), 1.0f, longPressLabel = if (fa) "ZNJ" else null, longPressAction = if (fa) KeyAction.Zwnj else null, popupActions = symbolMenuPopup(fa)),
+            Key(space, KeyAction.Space, 3.5f),
             Key(".", KeyAction.Character("."), 1.0f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
-            Key("↵", KeyAction.Enter, 2.0f, isSpecial = true, isAccent = true)
+            Key("↵", KeyAction.Enter, 1.8f, isSpecial = true, isAccent = true)
         )
-        // Keep abc access: put on symbols2 row3 end? Better add to row4? requested layout fixed; use long-press on #+=? no.
-        // Add ABC as first in row4 when in symbols? but user specified exact order. I'll replace #+= toggle behavior via ModeSymbols button? 
-        // Simpler: make #+= key label show ABC when secondary? No, user asked for #+= button.
-        // Use row3 last as ABC in both modes by adjusting count.
-        return listOf(row1, row2, row3WithAbc(row3, abcLabel), row4)
+        return listOf(row1, row2, row3WithAbc(row3), row4)
     }
 
-    private fun row3WithAbc(row3: List<Key>, abcLabel: String): List<Key> {
-        return row3 + Key(abcLabel, KeyAction.ModeLetters, 1.1f, isSpecial = true)
+    private fun row3WithAbc(row3: List<Key>): List<Key> {
+        // keep backspace at the same relative position (index 0), rest same count
+        return row3
     }
 
     private fun numpadRows(language: KeyboardLanguage): List<List<Key>> {
@@ -133,17 +130,29 @@ object KeyboardLayouts {
         return listOf(row1, row2, row3, row4)
     }
 
+    private fun symbolMenuPopup(fa: Boolean): List<Pair<String, KeyAction>> {
+        val chars = if (fa) {
+            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "\\", "/", "(", ")", "-", "&", "_", "~", "٪", "#", "@", "؟", "!", "؛", ":", "«", "»", "*")
+        } else {
+            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "\\", "/", "(", ")", "-", "&", "_", "~", "%", "#", "@", "?", "!", ";", ":", "<", ">", "*")
+        }
+        return chars.map { it to KeyAction.Character(it) }
+    }
+
     private fun persianDotPopup(): List<Pair<String, KeyAction>> = listOf(
-        "َ" to KeyAction.Character("َ"), "ُ" to KeyAction.Character("ُ"), "ِ" to KeyAction.Character("ِ"),
-        "ّ" to KeyAction.Character("ّ"), "ً" to KeyAction.Character("ً"), "؟" to KeyAction.Character("؟"),
-        "!" to KeyAction.Character("!"), "؛" to KeyAction.Character("؛"), ":" to KeyAction.Character(":"),
-        "-" to KeyAction.Character("-")
+        "؟" to KeyAction.Character("؟"), "!" to KeyAction.Character("!"), "؛" to KeyAction.Character("؛"),
+        ":" to KeyAction.Character(":"), "،" to KeyAction.Character("،"), "-" to KeyAction.Character("-"),
+        "_" to KeyAction.Character("_"), "(" to KeyAction.Character("("), ")" to KeyAction.Character(")"),
+        "«" to KeyAction.Character("«"), "»" to KeyAction.Character("»"), "\"" to KeyAction.Character("\""),
+        "'" to KeyAction.Character("'"), "@" to KeyAction.Character("@"), "#" to KeyAction.Character("#")
     )
 
     private fun englishDotPopup(): List<Pair<String, KeyAction>> = listOf(
-        "!" to KeyAction.Character("!"), "?" to KeyAction.Character("?"), "#" to KeyAction.Character("#"),
-        "@" to KeyAction.Character("@"), "-" to KeyAction.Character("-"), "_" to KeyAction.Character("_"),
-        ":" to KeyAction.Character(":")
+        "?" to KeyAction.Character("?"), "!" to KeyAction.Character("!"), ";" to KeyAction.Character(";"),
+        ":" to KeyAction.Character(":"), "," to KeyAction.Character(","), "-" to KeyAction.Character("-"),
+        "_" to KeyAction.Character("_"), "(" to KeyAction.Character("("), ")" to KeyAction.Character(")"),
+        "\"" to KeyAction.Character("\""), "'" to KeyAction.Character("'"), "@" to KeyAction.Character("@"),
+        "#" to KeyAction.Character("#"), "/" to KeyAction.Character("/"), "*" to KeyAction.Character("*")
     )
 
     private fun fa(label: String, longPress: String? = null): Key {

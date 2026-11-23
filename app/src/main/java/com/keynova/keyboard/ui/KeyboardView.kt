@@ -241,16 +241,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(44))
-            setPadding(dp(8), 0, dp(8), 0)
-        }
-        val back = TextView(context).apply {
-            text = "بازگشت به کیبورد"
-            setTextColor(theme.accent)
-            textSize = 14f
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            setPadding(dp(10), dp(8), dp(10), dp(8))
-            setOnClickListener { hideClipboard() }
+            setPadding(dp(12), 0, dp(12), 0)
         }
         val title = TextView(context).apply {
             text = "کلیپ‌بورد"
@@ -258,9 +249,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         }
-        header.addView(back)
         header.addView(title)
 
         val actionBar = LinearLayout(context).apply {
@@ -284,9 +274,28 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         scroll.addView(list)
         clipboardPanel = list
 
+        val bottomBar = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            setPadding(dp(8), dp(6), dp(8), dp(8))
+        }
+        val back = TextView(context).apply {
+            text = "بازگشت به کیبورد"
+            setTextColor(theme.accent)
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            setBackgroundResource(theme.keySpecialDrawable)
+            setOnClickListener { hideClipboard() }
+        }
+        bottomBar.addView(back)
+
         panel.addView(header)
         panel.addView(actionBar)
         panel.addView(scroll)
+        panel.addView(bottomBar)
         return panel
     }
 
@@ -311,7 +320,14 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         row.addView(tv)
         if (!isEmpty) {
             row.setOnClickListener { onClick() }
-            row.setOnLongClickListener { selectedClipText = text; refreshClipboard(); true }
+            row.setOnLongClickListener {
+                selectedClipText = text
+                refreshClipboard()
+                if (keyPreviewEnabled) {
+                    try { performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) } catch (_: Exception) {}
+                }
+                true
+            }
         } else {
             row.alpha = 0.7f
         }
@@ -553,14 +569,19 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     if (key.popupActions.isNotEmpty()) {
                         handler.postDelayed({
                             longPressFired = true
-                            dismissKeyPreview()
                             showPopup(view, key.popupActions)
                         }, longPressDelayMs.toLong())
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
                             longPressFired = true
-                            dismissKeyPreview()
                             controller?.handleAction(key.longPressAction)
+                            // show preview of long-press char
+                            val lpLabel = key.longPressLabel ?: ""
+                            if (lpLabel.isNotBlank()) {
+                                val fake = Key(lpLabel, key.longPressAction, longPressLabel = null, longPressAction = null)
+                                showKeyPreview(view, fake)
+                                handler.postDelayed({ dismissKeyPreview() }, 180L)
+                            } else dismissKeyPreview()
                         }, longPressDelayMs.toLong())
                     }
                     true
@@ -587,33 +608,44 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         dismissPopup()
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
-            setBackgroundColor(ContextCompat.getColor(context, R.color.keynova_key_bg))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = dp(10).toFloat()
+                setColor(theme.keyBg)
+                setStroke(dp(1), theme.accent)
+            }
             val p = dp(4)
             setPadding(p, p, p, p)
         }
         val pw = PopupWindow(row, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             elevation = dp(8).toFloat()
-            setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(context, R.color.keynova_key_bg)))
+            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         actions.forEach { (label, action) ->
             val item = TextView(context).apply {
                 text = label
-                setTextColor(ContextCompat.getColor(context, R.color.keynova_text))
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                setTextColor(theme.text)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
                 gravity = Gravity.CENTER
-                minWidth = dp(40)
-                minHeight = dp(40)
-                setPadding(dp(8), dp(8), dp(8), dp(8))
+                minWidth = dp(44)
+                minHeight = dp(44)
+                setPadding(dp(10), dp(8), dp(10), dp(8))
                 setOnClickListener {
                     controller?.handleAction(action)
                     pw.dismiss()
+                }
+                val lp = longPressAlternates(label)
+                if (lp.isNotEmpty()) {
+                    setOnLongClickListener {
+                        showPopup(this, lp)
+                        true
+                    }
                 }
             }
             row.addView(item)
         }
         popup = pw
-        pw.showAsDropDown(anchor, 0, -anchor.height - dp(48))
+        pw.showAsDropDown(anchor, 0, -anchor.height - dp(52))
     }
 
     private fun dismissPopup() {
@@ -623,30 +655,78 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     private fun showKeyPreview(anchor: View, key: Key) {
         if (!keyPreviewEnabled) return
-        if (key.action is KeyAction.Space || key.action is KeyAction.Enter || key.action is KeyAction.Backspace || key.action is KeyAction.Shift) return
+        val action = key.action
+        if (action is KeyAction.Space || action is KeyAction.Enter || action is KeyAction.Backspace ||
+            action is KeyAction.Shift || action is KeyAction.SwitchLanguage || action is KeyAction.ModeSymbols ||
+            action is KeyAction.ModeSymbols2 || action is KeyAction.ModeLetters || action is KeyAction.ModeNumpad) return
         dismissKeyPreview()
         val tv = TextView(context).apply {
             text = key.label
-            setTextColor(ContextCompat.getColor(context, R.color.keynova_text))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f)
+            setTextColor(theme.text)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, (keyTextSizeSp + 6).coerceAtMost(30).toFloat())
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            minWidth = dp(52)
-            minHeight = dp(52)
-            setPadding(dp(10), dp(8), dp(10), dp(8))
-            setBackgroundResource(R.drawable.key_bg)
+            minWidth = dp(54)
+            minHeight = dp(54)
+            setPadding(dp(12), dp(8), dp(12), dp(8))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = dp(theme.keyRadiusDp).toFloat()
+                setColor(theme.keyBgPressed)
+                setStroke(dp(1), theme.accent)
+            }
         }
         val pw = PopupWindow(tv, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
-            elevation = dp(6).toFloat()
+            elevation = dp(8).toFloat()
             isClippingEnabled = false
+            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         keyPreview = pw
-        pw.showAsDropDown(anchor, (anchor.width - dp(52)) / 2, -anchor.height - dp(56))
+        anchor.post {
+            if (!anchor.isAttachedToWindow) return@post
+            val w = tv.minWidth.coerceAtLeast(anchor.width)
+            val xOff = (anchor.width - w) / 2
+            pw.showAsDropDown(anchor, xOff, -anchor.height - dp(60))
+        }
     }
 
     private fun dismissKeyPreview() {
         keyPreview?.dismiss()
         keyPreview = null
+    }
+
+    private fun longPressAlternates(label: String): List<Pair<String, KeyAction>> {
+        val alts: List<String> = when (label) {
+            "•" -> listOf("◦", "●", "▪", "▫")
+            "'" -> listOf("`", "´", "‘", "’")
+            "\"" -> listOf("“", "”", "«", "»")
+            "✓" -> listOf("✔", "✕", "✗")
+            "♡" -> listOf("♥", "❤", "❥")
+            "☆" -> listOf("★", "✦", "✧")
+            "=" -> listOf("≠", "≈", "≡")
+            "+" -> listOf("±", "×", "÷")
+            "\\" -> listOf("|", "/", "¦")
+            "/" -> listOf("\\", "|", "÷")
+            "(" -> listOf("[", "{", "<")
+            ")" -> listOf("]", "}", ">")
+            "-" -> listOf("–", "—", "_")
+            "&" -> listOf("§", "¶")
+            "_" -> listOf("-", "–", "—")
+            "~" -> listOf("≈", "∼")
+            "٪", "%" -> listOf("‰", "°")
+            "#" -> listOf("№", "♯")
+            "@" -> listOf("©", "®", "™")
+            "؟", "?" -> listOf("¿", "‽")
+            "!" -> listOf("¡", "‼")
+            "؛", ";" -> listOf(":", "…")
+            ":" -> listOf("؛", ";", "…")
+            "«" -> listOf("<", "‹", "\"")
+            "»" -> listOf(">", "›", "\"")
+            "*" -> listOf("×", "★", "✦")
+            "<" -> listOf("≤", "«", "‹")
+            ">" -> listOf("≥", "»", "›")
+            else -> emptyList()
+        }
+        return alts.map { it to KeyAction.Character(it) }
     }
 
     private fun provideFeedback(view: View) {
