@@ -16,9 +16,9 @@ data class KeyboardTheme(
     @ColorInt val accentPressed: Int,
     @ColorInt val text: Int,
     @ColorInt val textSecondary: Int,
-    @DrawableRes val keyDrawable: Int = R.drawable.bg_key,
-    @DrawableRes val keySpecialDrawable: Int = R.drawable.bg_key_special,
-    @DrawableRes val keyAccentDrawable: Int = R.drawable.bg_key_accent,
+    @DrawableRes val keyDrawable: Int = R.drawable.key_bg,
+    @DrawableRes val keySpecialDrawable: Int = R.drawable.key_bg_special,
+    @DrawableRes val keyAccentDrawable: Int = R.drawable.key_bg_accent,
     val keyRadiusDp: Int = 10,
     val keyStroke: Boolean = false
 )
@@ -30,7 +30,7 @@ object ThemeManager {
     private fun c(
         id: String, name: String,
         bg: Long, k: Long, kp: Long, s: Long, sp: Long, a: Long, ap: Long, t: Long, ts: Long,
-        kd: Int = R.drawable.bg_key, sd: Int = R.drawable.bg_key_special, ad: Int = R.drawable.bg_key_accent,
+        kd: Int = R.drawable.key_bg, sd: Int = R.drawable.key_bg_special, ad: Int = R.drawable.key_bg_accent,
         r: Int = 10, st: Boolean = false
     ) = KeyboardTheme(id, name, bg.i(), k.i(), kp.i(), s.i(), sp.i(), a.i(), ap.i(), t.i(), ts.i(), kd, sd, ad, r, st)
 
