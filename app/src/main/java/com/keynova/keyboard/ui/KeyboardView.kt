@@ -569,19 +569,16 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     if (key.popupActions.isNotEmpty()) {
                         handler.postDelayed({
                             longPressFired = true
-                            showPopup(view, key.popupActions)
+                            showPopup(view, key.popupActions, dismissOnCommit = false)
                         }, longPressDelayMs.toLong())
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
                             longPressFired = true
-                            controller?.handleAction(key.longPressAction)
-                            // show preview of long-press char
                             val lpLabel = key.longPressLabel ?: ""
                             if (lpLabel.isNotBlank()) {
                                 val fake = Key(lpLabel, key.longPressAction, longPressLabel = null, longPressAction = null)
                                 showKeyPreview(view, fake)
-                                handler.postDelayed({ dismissKeyPreview() }, 180L)
-                            } else dismissKeyPreview()
+                            }
                         }, longPressDelayMs.toLong())
                     }
                     true
@@ -589,14 +586,19 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
-                    if (!longPressFired) controller?.handleAction(key.action)
+                    if (!longPressFired) {
+                        controller?.handleAction(key.action)
+                    } else if (key.popupActions.isEmpty() && key.longPressAction != null) {
+                        controller?.handleAction(key.longPressAction)
+                    }
                     view.performClick()
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
-                    dismissPopup()
+                    // keep popup if it was opened; outside touch dismisses it
+                    if (!longPressFired) dismissPopup()
                     true
                 }
                 else -> false
@@ -604,22 +606,28 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         }
     }
 
-    private fun showPopup(anchor: View, actions: List<Pair<String, KeyAction>>) {
+    private fun showPopup(anchor: View, actions: List<Pair<String, KeyAction>>, dismissOnCommit: Boolean = true) {
         dismissPopup()
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
+            val p = dp(4)
+            setPadding(p, p, p, p)
+        }
+        val scroll = HorizontalScrollView(context).apply {
+            isHorizontalScrollBarEnabled = false
             background = android.graphics.drawable.GradientDrawable().apply {
                 cornerRadius = dp(10).toFloat()
                 setColor(theme.keyBg)
                 setStroke(dp(1), theme.accent)
             }
-            val p = dp(4)
-            setPadding(p, p, p, p)
+            addView(row)
         }
-        val pw = PopupWindow(row, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, true).apply {
+        val maxW = (resources.displayMetrics.widthPixels * 0.92f).toInt()
+        val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, true).apply {
             isOutsideTouchable = true
             elevation = dp(8).toFloat()
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            width = LayoutParams.WRAP_CONTENT
         }
         actions.forEach { (label, action) ->
             val item = TextView(context).apply {
@@ -632,12 +640,12 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 setPadding(dp(10), dp(8), dp(10), dp(8))
                 setOnClickListener {
                     controller?.handleAction(action)
-                    pw.dismiss()
+                    if (dismissOnCommit) pw.dismiss()
                 }
                 val lp = longPressAlternates(label)
                 if (lp.isNotEmpty()) {
                     setOnLongClickListener {
-                        showPopup(this, lp)
+                        showPopup(this, lp, dismissOnCommit = true)
                         true
                     }
                 }
@@ -645,7 +653,13 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             row.addView(item)
         }
         popup = pw
-        pw.showAsDropDown(anchor, 0, -anchor.height - dp(52))
+        scroll.measure(View.MeasureSpec.makeMeasureSpec(maxW, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        val popupW = scroll.measuredWidth.coerceAtMost(maxW)
+        pw.width = popupW
+        val anchorLoc = IntArray(2)
+        anchor.getLocationOnScreen(anchorLoc)
+        val xOff = ((anchor.width - popupW) / 2).coerceIn(-anchorLoc[0] + dp(4), resources.displayMetrics.widthPixels - anchorLoc[0] - popupW - dp(4))
+        pw.showAsDropDown(anchor, xOff, -anchor.height - dp(56))
     }
 
     private fun dismissPopup() {

@@ -20,16 +20,16 @@ object KeyboardLayouts {
     private fun persianRows(): List<List<Key>> {
         // Rows ordered for LTR rendering to produce standard Persian visual layout
         val row1 = listOf(
-            fa("ص", "ض"), fa("ث", "﷼"), fa("ق"), fa("ف", "ڤ"), fa("ع", "غ"),
-            fa("ه", "ة"), fa("خ"), fa("ح"), fa("ج"), fa("چ")
+            fa("ص", "ض"), fa("ث"), fa("ق"), fa("ف"), fa("ع", "غ"),
+            fa("ه"), fa("خ"), fa("ح"), fa("ج"), fa("چ")
         )
         val row2 = listOf(
-            fa("ش"), fa("س"), fa("ی", "ئ"), fa("ب"), fa("ل"),
-            fa("ا", "آ"), fa("ت"), fa("ن"), fa("م"), fa("پ")
+            fa("ش"), fa("س"), fa("ی"), fa("ب"), fa("ل"),
+            fa("ا"), fa("ت"), fa("ن"), fa("م"), fa("پ")
         )
         val row3 = listOf(
             fa("ظ"), fa("ط"), fa("ز", "ژ"), fa("ر"), fa("د", "ذ"),
-            fa("و", "ؤ"), fa("ک"), fa("گ"),
+            fa("و"), fa("ک"), fa("گ"),
             Key(label = "⌫", action = KeyAction.Backspace, weight = 1.35f, isSpecial = true)
         )
         val row4 = listOf(
@@ -76,30 +76,34 @@ object KeyboardLayouts {
 
         val row1 = listOf("1","2","3","4","5","6","7","8","9","0").map { Key(it, KeyAction.Character(it)) }
         val row2 = if (!secondary) {
-            listOf("@", "#", "$", "_", "&", "-", "+", "(", ")", "/").map { Key(it, KeyAction.Character(it)) }
+            listOf("@", "#", "$", "_", "&", "-", "+", "(", ")", "/")
+                .map { symKey(it, fa) }
         } else {
-            listOf("[", "]", "{", "}", "%", "^", "*", "+", "=", "\\").map { Key(it, KeyAction.Character(it)) }
+            listOf("~", "`", "|", "•", "√", "π", "÷", "×", "¶", "Δ")
+                .map { symKey(it, fa) }
         }
         val row3 = if (!secondary) {
             listOf(
-                Key("*", KeyAction.Character("*")),
-                Key("\"", KeyAction.Character("\"")),
-                Key("'", KeyAction.Character("'")),
-                Key(":", KeyAction.Character(":")),
-                if (fa) Key("؛", KeyAction.Character("؛")) else Key(";", KeyAction.Character(";")),
-                Key("!", KeyAction.Character("!")),
-                if (fa) Key("؟", KeyAction.Character("؟")) else Key("?", KeyAction.Character("?")),
+                Key("=\\<", KeyAction.ModeSymbols2, 1.35f, isSpecial = true),
+                symKey("*", fa),
+                symKey("\"", fa),
+                symKey("'", fa),
+                symKey(":", fa),
+                symKey(if (fa) "؛" else ";", fa),
+                symKey("!", fa),
+                symKey(if (fa) "؟" else "?", fa),
                 Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true)
             )
         } else {
             listOf(
-                Key("_", KeyAction.Character("_")),
-                Key("|", KeyAction.Character("|")),
-                Key("~", KeyAction.Character("~")),
-                Key("<", KeyAction.Character("<")),
-                Key(">", KeyAction.Character(">")),
-                Key("€", KeyAction.Character("€")),
-                Key("•", KeyAction.Character("•")),
+                Key("1/2", KeyAction.ModeSymbols, 1.35f, isSpecial = true),
+                symKey(if (fa) "٪" else "%", fa),
+                symKey("=", fa),
+                symKey("✓", fa),
+                symKey("♡", fa),
+                symKey("☆", fa),
+                symKey("<", fa),
+                symKey(">", fa),
                 Key("⌫", KeyAction.Backspace, 1.35f, isSpecial = true)
             )
         }
@@ -111,7 +115,15 @@ object KeyboardLayouts {
             Key(".", KeyAction.Character("."), 1.0f, popupActions = if (fa) persianDotPopup() else englishDotPopup()),
             Key("↵", KeyAction.Enter, 1.8f, isSpecial = true, isAccent = true)
         )
-        return listOf(row1, row2, row3WithAbc(row3), row4)
+        return listOf(row1, row2, row3, row4)
+    }
+
+    private fun symKey(label: String, fa: Boolean): Key {
+        return Key(
+            label = label,
+            action = KeyAction.Character(label),
+            popupActions = longPressForSymbol(label, fa)
+        )
     }
 
     private fun row3WithAbc(row3: List<Key>): List<Key> {
@@ -132,11 +144,53 @@ object KeyboardLayouts {
 
     private fun symbolMenuPopup(fa: Boolean): List<Pair<String, KeyAction>> {
         val chars = if (fa) {
-            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "\\", "/", "(", ")", "-", "&", "_", "~", "٪", "#", "@", "؟", "!", "؛", ":", "«", "»", "*")
+            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "−", "×", "÷", "\\", "/", "(", ")", "-", "&", "_", "~", "٪", "#", "@", "؟", "!", "؛", ":", "«", "»", "*")
         } else {
-            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "\\", "/", "(", ")", "-", "&", "_", "~", "%", "#", "@", "?", "!", ";", ":", "<", ">", "*")
+            listOf("•", "'", "\"", "✓", "♡", "☆", "=", "+", "−", "×", "÷", "\\", "/", "(", ")", "-", "&", "_", "~", "%", "#", "@", "?", "!", ";", ":", "<", ">", "*")
         }
         return chars.map { it to KeyAction.Character(it) }
+    }
+
+    private fun longPressForSymbol(label: String, fa: Boolean): List<Pair<String, KeyAction>> {
+        val alts: List<String> = when (label) {
+            "(" -> listOf("[", "{", "<", "⟨")
+            ")" -> listOf("]", "}", ">", "⟩")
+            "\"" -> if (fa) listOf("«", "»", "“", "”") else listOf("“", "”", "«", "»")
+            "'" -> listOf("`", "´", "‘", "’")
+            "%" , "٪" -> listOf("‰", "‱", "°")
+            "=" -> listOf("≠", "≈", "≡", "∞")
+            "✓" -> listOf("✔", "✗", "✘", "☑")
+            "؟", "?" -> if (fa) listOf("?", "¿", "‽") else listOf("؟", "¿", "‽")
+            "!" -> listOf("¡", "‼", "❕")
+            "-" -> listOf("–", "—", "−", "_")
+            "−" -> listOf("-", "–", "—")
+            "+" -> listOf("±", "∑")
+            "*" -> listOf("×", "⋆", "✱")
+            "/" -> listOf("\\", "÷", "⁄")
+            "\\" -> listOf("/", "|", "¦")
+            "&" -> listOf("§", "¶", "⅋")
+            "_" -> listOf("-", "–", "—")
+            "~" -> listOf("≈", "∼", "≋")
+            "#" -> listOf("№", "♯")
+            "@" -> listOf("©", "®", "™")
+            ":" -> listOf(if (fa) "؛" else ";", "…")
+            "؛", ";" -> listOf(":", "…")
+            "•" -> listOf("◦", "●", "▪", "▫")
+            "♡" -> listOf("♥", "❤", "❥")
+            "☆" -> listOf("★", "✦", "✧")
+            "×" -> listOf("*", "✕", "⋅")
+            "÷" -> listOf("/", "∕", "➗")
+            "<" -> listOf("≤", "«", "‹")
+            ">" -> listOf("≥", "»", "›")
+            "«" -> listOf("\"", "<", "‹")
+            "»" -> listOf("\"", ">", "›")
+            "√" -> listOf("∛", "∜")
+            "π" -> listOf("Π", "Ω", "μ")
+            "Δ" -> listOf("δ", "∞", "°")
+            "^" -> listOf("↑", "↓", "→")
+            else -> emptyList()
+        }
+        return alts.map { it to KeyAction.Character(it) }
     }
 
     private fun persianDotPopup(): List<Pair<String, KeyAction>> = listOf(

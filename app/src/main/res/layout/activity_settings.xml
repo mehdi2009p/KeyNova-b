@@ -81,32 +81,57 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/group_typing"
+            android:text="شروع سریع"
             android:textColor="@color/keynova_accent"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <LinearLayout android:id="@+id/cardEnable" style="@style/HomeCard">
-            <ImageView style="@style/HomeCardIcon" android:src="@drawable/ic_home_enable" />
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                <TextView style="@style/HomeCardTitle" android:text="@string/menu_enable" />
-                <TextView style="@style/HomeCardDesc" android:text="@string/enable_keyboard_desc" />
-            </LinearLayout>
-        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
 
-        <LinearLayout android:id="@+id/cardSelect" style="@style/HomeCard">
-            <ImageView style="@style/HomeCardIcon" android:src="@drawable/ic_home_select" />
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                <TextView style="@style/HomeCardTitle" android:text="@string/menu_select" />
-                <TextView style="@style/HomeCardDesc" android:text="@string/select_keyboard_desc" />
+            <LinearLayout
+                android:id="@+id/cardEnable"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/home_card_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="14dp">
+                <ImageView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/home_icon_bg" android:padding="8dp" android:src="@drawable/ic_home_enable" android:tint="@color/keynova_accent" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/menu_enable" android:textColor="@color/keynova_text" android:textSize="13sp" android:textStyle="bold" />
             </LinearLayout>
-        </LinearLayout>
 
-        <LinearLayout android:id="@+id/cardTest" style="@style/HomeCard">
-            <ImageView style="@style/HomeCardIcon" android:src="@drawable/ic_home_test" />
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                <TextView style="@style/HomeCardTitle" android:text="@string/menu_test" />
-                <TextView style="@style/HomeCardDesc" android:text="@string/test_keyboard_desc" />
+            <LinearLayout
+                android:id="@+id/cardSelect"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="6dp"
+                android:background="@drawable/home_card_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="14dp">
+                <ImageView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/home_icon_bg" android:padding="8dp" android:src="@drawable/ic_home_select" android:tint="@color/keynova_accent" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/menu_select" android:textColor="@color/keynova_text" android:textSize="13sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardTest"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/home_card_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="14dp">
+                <ImageView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/home_icon_bg" android:padding="8dp" android:src="@drawable/ic_home_test" android:tint="@color/keynova_accent" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/menu_test" android:textColor="@color/keynova_text" android:textSize="13sp" android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 

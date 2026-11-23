@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
+import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.RadioGroup
 import android.widget.SeekBar
@@ -13,10 +14,14 @@ import androidx.appcompat.widget.SwitchCompat
 import com.keynova.keyboard.R
 import com.keynova.keyboard.settings.KeyboardPrefs
 import com.keynova.keyboard.theme.ThemeManager
+import android.view.inputmethod.EditorInfo
+import com.keynova.keyboard.logic.KeyboardController
+import com.keynova.keyboard.ui.KeyboardView
 
 class KeyboardSettingsActivity : AppCompatActivity() {
 
     private lateinit var prefs: KeyboardPrefs
+    private var previewKeyboard: KeyboardView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,26 @@ class KeyboardSettingsActivity : AppCompatActivity() {
         bindRadioGroup(R.id.groupSpaceSwipe, arrayOf(R.id.radioSwipeOff, R.id.radioSwipeLang, R.id.radioSwipeCursor), prefs.spaceSwipeMode) { prefs.spaceSwipeMode = it }
         bindRadioGroup(R.id.groupSpaceLabel, arrayOf(R.id.radioLabelLang, R.id.radioLabelSpace, R.id.radioLabelEmpty), prefs.spaceLabelMode) { prefs.spaceLabelMode = it }
         setupThemePickers()
+        setupKeyboardPreview()
+    }
+
+    private fun setupKeyboardPreview() {
+        val container = findViewById<FrameLayout>(R.id.keyboardPreviewContainer)
+        val kv = KeyboardView(this)
+        kv.controller = KeyboardController(
+            inputConnectionProvider = { null },
+            editorInfoProvider = { EditorInfo() },
+            onStateChanged = { kv.render() },
+            autoCapitalizeProvider = { prefs.autoCapitalize },
+            onTextChanged = { kv.updateSuggestions() }
+        )
+        container.removeAllViews()
+        container.addView(kv, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT))
+        previewKeyboard = kv
+    }
+
+    private fun refreshPreview() {
+        previewKeyboard?.render()
     }
 
     private fun setupThemePickers() {
@@ -71,7 +96,7 @@ class KeyboardSettingsActivity : AppCompatActivity() {
                         setMargins(8, 8, 8, 8)
                     }
                     layoutParams = lp
-                    setOnClickListener { prefs.themeId = t.id; render() }
+                    setOnClickListener { prefs.themeId = t.id; render(); refreshPreview() }
                 }
                 colorGrid.addView(tv)
             }
@@ -82,7 +107,7 @@ class KeyboardSettingsActivity : AppCompatActivity() {
     private fun bindSwitch(id: Int, initial: Boolean, onChange: (Boolean) -> Unit) {
         val sw = findViewById<SwitchCompat>(id)
         sw.isChecked = initial
-        sw.setOnCheckedChangeListener { _, checked -> onChange(checked) }
+        sw.setOnCheckedChangeListener { _, checked -> onChange(checked); refreshPreview() }
     }
 
     private fun bindSeek(seekId: Int, valueId: Int, min: Int, max: Int, current: Int, unit: String, onChange: (Int) -> Unit) {
@@ -95,7 +120,7 @@ class KeyboardSettingsActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val v = min + progress
                 value.text = "$v$unit"
-                if (fromUser) onChange(v)
+                if (fromUser) { onChange(v); refreshPreview() }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -107,7 +132,7 @@ class KeyboardSettingsActivity : AppCompatActivity() {
         if (selected in ids.indices) g.check(ids[selected])
         g.setOnCheckedChangeListener { _, checkedId ->
             val idx = ids.indexOf(checkedId)
-            if (idx >= 0) onChange(idx)
+            if (idx >= 0) { onChange(idx); refreshPreview() }
         }
     }
 }

@@ -26,6 +26,14 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <TextView style="@style/SettingsGroupTitle" android:text="پیش‌نمایش کیبورد" />
+            <FrameLayout
+                android:id="@+id/keyboardPreviewContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/keynova_key_special_bg"
+                android:padding="6dp" />
+
             <TextView style="@style/SettingsGroupTitle" android:text="@string/group_typing" />
 
             <LinearLayout style="@style/SettingsCard">
