@@ -566,18 +566,22 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         v.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    handler.removeCallbacksAndMessages(null)
                     dismissPopup()
+                    dismissKeyPreview()
                     longPressFired = false
                     provideFeedback(view)
                     showKeyPreview(view, key)
                     if (key.popupActions.isNotEmpty()) {
                         handler.postDelayed({
+                            if (!view.isAttachedToWindow) return@postDelayed
                             longPressFired = true
                             showPopup(view, key.popupActions, dismissOnCommit = false)
                             refreshPopupHighlight(-1)
                         }, longPressDelayMs.toLong())
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
+                            if (!view.isAttachedToWindow) return@postDelayed
                             longPressFired = true
                             val lpLabel = key.longPressLabel ?: ""
                             if (lpLabel.isNotBlank()) {
@@ -595,28 +599,25 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     }
                     true
                 }
-                MotionEvent.ACTION_UP -> {
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
                     if (!longPressFired) {
                         controller?.handleAction(key.action)
+                        dismissPopup()
                     } else if (popup != null) {
                         val idx = popupIndexAt(event.rawX, event.rawY)
                         if (idx >= 0 && idx < popupActionsCache.size) {
                             controller?.handleAction(popupActionsCache[idx].second)
-                            dismissPopup()
                         }
-                        // if released outside popup, keep it open as requested? user said hold and slide to select; outside release keeps no commit
+                        dismissPopup()
                     } else if (key.longPressAction != null) {
                         controller?.handleAction(key.longPressAction)
+                        dismissPopup()
+                    } else {
+                        dismissPopup()
                     }
                     view.performClick()
-                    true
-                }
-                MotionEvent.ACTION_CANCEL -> {
-                    handler.removeCallbacksAndMessages(null)
-                    dismissKeyPreview()
-                    if (!longPressFired) dismissPopup()
                     true
                 }
                 else -> false
@@ -643,8 +644,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         }
         val maxW = (resources.displayMetrics.widthPixels * 0.94f).toInt()
         val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
-            isOutsideTouchable = true
-            isTouchable = false // visual-only; selection by sliding finger on key
+            isOutsideTouchable = false
+            isTouchable = false
             isFocusable = false
             isClippingEnabled = false
             inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
