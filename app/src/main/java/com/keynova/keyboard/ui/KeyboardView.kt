@@ -55,6 +55,8 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private var clipboardActionBar: LinearLayout? = null
     private var keyboardContent: View? = null
     private var keyPreview: PopupWindow? = null
+    private var keyPreviewAnchor: View? = null
+    private var keyPreviewShowRunnable: Runnable? = null
     private var selectedClipText: String? = null
     @Volatile private var vibrationEnabled = prefs.vibrationEnabled
     @Volatile private var soundEnabled = prefs.soundEnabled
@@ -123,6 +125,16 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         dismissKeyPreview()
         prefs.unregisterListener(prefListener)
         super.onDetachedFromWindow()
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        if (visibility != VISIBLE) {
+            handler.removeCallbacksAndMessages(null)
+            longPressFired = false
+            dismissPopup()
+            dismissKeyPreview()
+        }
+        super.onWindowVisibilityChanged(visibility)
     }
 
     fun render() {
@@ -740,18 +752,36 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val pw = PopupWindow(tv, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
             elevation = dp(8).toFloat()
             isClippingEnabled = false
+            isTouchable = false
+            isFocusable = false
+            inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         keyPreview = pw
-        anchor.post {
-            if (!anchor.isAttachedToWindow) return@post
+        keyPreviewAnchor = anchor
+        val showRunnable = Runnable {
+            keyPreviewShowRunnable = null
+            if (keyPreview != pw) return@Runnable
+            if (!anchor.isAttachedToWindow || !isAttachedToWindow) {
+                if (keyPreview == pw) dismissKeyPreview()
+                return@Runnable
+            }
             val w = tv.minWidth.coerceAtLeast(anchor.width)
             val xOff = (anchor.width - w) / 2
-            pw.showAsDropDown(anchor, xOff, -anchor.height - dp(60))
+            try {
+                pw.showAsDropDown(anchor, xOff, -anchor.height - dp(60))
+            } catch (_: Exception) {
+                if (keyPreview == pw) dismissKeyPreview()
+            }
         }
+        keyPreviewShowRunnable = showRunnable
+        anchor.post(showRunnable)
     }
 
     private fun dismissKeyPreview() {
+        keyPreviewShowRunnable?.let { keyPreviewAnchor?.removeCallbacks(it) }
+        keyPreviewShowRunnable = null
+        keyPreviewAnchor = null
         try { keyPreview?.dismiss() } catch (_: Exception) {}
         keyPreview = null
     }
