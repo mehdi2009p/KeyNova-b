@@ -626,6 +626,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
 
     private fun showPopup(anchor: View, actions: List<Pair<String, KeyAction>>, dismissOnCommit: Boolean = true) {
         dismissPopup()
+        if (actions.isEmpty()) return
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             val p = dp(4)
@@ -643,14 +644,17 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         val maxW = (resources.displayMetrics.widthPixels * 0.94f).toInt()
         val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
             isOutsideTouchable = true
+            isTouchable = false // visual-only; selection by sliding finger on key
             isFocusable = false
+            isClippingEnabled = false
+            inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
             elevation = dp(8).toFloat()
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
         }
         popupActionsCache = actions
         popupAnchor = anchor
         val items = mutableListOf<TextView>()
-        actions.forEachIndexed { index, (label, action) ->
+        actions.forEachIndexed { index, (label, _) ->
             val item = TextView(context).apply {
                 text = label
                 tag = index
@@ -660,17 +664,6 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 minWidth = dp(44)
                 minHeight = dp(44)
                 setPadding(dp(10), dp(8), dp(10), dp(8))
-                setOnClickListener {
-                    controller?.handleAction(action)
-                    if (dismissOnCommit) dismissPopup() else refreshPopupHighlight(-1)
-                }
-                val lp = longPressAlternates(label)
-                if (lp.isNotEmpty()) {
-                    setOnLongClickListener {
-                        showPopup(this, lp, dismissOnCommit = true)
-                        true
-                    }
-                }
             }
             items.add(item)
             row.addView(item)
@@ -678,12 +671,19 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         popupItems = items
         popup = pw
         scroll.measure(View.MeasureSpec.makeMeasureSpec(maxW, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
-        val popupW = scroll.measuredWidth.coerceAtMost(maxW)
+        val popupW = scroll.measuredWidth.coerceAtLeast(dp(48)).coerceAtMost(maxW)
+        val popupH = scroll.measuredHeight.coerceAtLeast(dp(48))
         pw.width = popupW
+        pw.height = popupH
         val anchorLoc = IntArray(2)
         anchor.getLocationOnScreen(anchorLoc)
         val xOff = ((anchor.width - popupW) / 2).coerceIn(-anchorLoc[0] + dp(4), resources.displayMetrics.widthPixels - anchorLoc[0] - popupW - dp(4))
-        pw.showAsDropDown(anchor, xOff, -anchor.height - dp(56))
+        val yOff = -anchor.height - popupH - dp(8)
+        try {
+            pw.showAsDropDown(anchor, xOff, yOff)
+        } catch (_: Exception) {
+            try { pw.showAtLocation(anchor, Gravity.NO_GRAVITY, anchorLoc[0] + xOff, anchorLoc[1] + yOff) } catch (_: Exception) {}
+        }
     }
 
     private fun refreshPopupHighlight(selected: Int) {
