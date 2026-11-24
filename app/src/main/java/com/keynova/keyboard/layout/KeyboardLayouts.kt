@@ -35,7 +35,7 @@ object KeyboardLayouts {
         val row4 = listOf(
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
-            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj, popupActions = listOf("\u200C" to KeyAction.Zwnj)),
+            Key(label = "،", action = KeyAction.Character("،"), weight = 1.0f, longPressLabel = "ZNJ", longPressAction = KeyAction.Zwnj, popupActions = listOf("نیم‌فاصله" to KeyAction.Zwnj)),
             Key(label = "فاصله", action = KeyAction.Space, weight = 3.5f),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = persianDotPopup()),
             Key(label = "↵", action = KeyAction.Enter, weight = 1.8f, isSpecial = true, isAccent = true)
@@ -60,7 +60,7 @@ object KeyboardLayouts {
         val row4 = listOf(
             Key(label = "#+=", action = KeyAction.ModeSymbols2, weight = 1.1f, isSpecial = true),
             Key(label = "⌨", action = KeyAction.ModeNumpad, weight = 1.0f, isSpecial = true),
-            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f, popupActions = listOf("\u200C" to KeyAction.Zwnj)),
+            Key(label = ",", action = KeyAction.Character(","), weight = 1.0f, popupActions = listOf("نیم‌فاصله" to KeyAction.Zwnj)),
             Key(label = "space", action = KeyAction.Space, weight = 3.5f),
             Key(label = ".", action = KeyAction.Character("."), weight = 1.0f, popupActions = englishDotPopup()),
             Key(label = "↵", action = KeyAction.Enter, weight = 1.8f, isSpecial = true, isAccent = true)
