@@ -566,6 +566,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         v.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    dismissPopup()
                     longPressFired = false
                     provideFeedback(view)
                     showKeyPreview(view, key)
@@ -641,7 +642,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         }
         val maxW = (resources.displayMetrics.widthPixels * 0.94f).toInt()
         val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
-            isOutsideTouchable = false
+            isOutsideTouchable = true
             isFocusable = false
             elevation = dp(8).toFloat()
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
