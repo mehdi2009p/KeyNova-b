@@ -43,6 +43,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     private val handler = Handler(Looper.getMainLooper())
     private var longPressFired = false
     private var popup: PopupWindow? = null
+    private var popupItems: List<TextView> = emptyList()
+    private var popupActionsCache: List<Pair<String, KeyAction>> = emptyList()
+    private var popupAnchor: View? = null
     private val prefs = KeyboardPrefs(context)
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val suggestions = SuggestionEngine(context)
@@ -570,6 +573,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                         handler.postDelayed({
                             longPressFired = true
                             showPopup(view, key.popupActions, dismissOnCommit = false)
+                            refreshPopupHighlight(-1)
                         }, longPressDelayMs.toLong())
                     } else if (key.longPressAction != null) {
                         handler.postDelayed({
@@ -583,12 +587,26 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     }
                     true
                 }
+                MotionEvent.ACTION_MOVE -> {
+                    if (longPressFired && popup != null) {
+                        val idx = popupIndexAt(event.rawX, event.rawY)
+                        refreshPopupHighlight(idx)
+                    }
+                    true
+                }
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
                     if (!longPressFired) {
                         controller?.handleAction(key.action)
-                    } else if (key.popupActions.isEmpty() && key.longPressAction != null) {
+                    } else if (popup != null) {
+                        val idx = popupIndexAt(event.rawX, event.rawY)
+                        if (idx >= 0 && idx < popupActionsCache.size) {
+                            controller?.handleAction(popupActionsCache[idx].second)
+                            dismissPopup()
+                        }
+                        // if released outside popup, keep it open as requested? user said hold and slide to select; outside release keeps no commit
+                    } else if (key.longPressAction != null) {
                         controller?.handleAction(key.longPressAction)
                     }
                     view.performClick()
@@ -597,7 +615,6 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 MotionEvent.ACTION_CANCEL -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
-                    // keep popup if it was opened; outside touch dismisses it
                     if (!longPressFired) dismissPopup()
                     true
                 }
@@ -622,16 +639,20 @@ class KeyboardView(context: Context) : LinearLayout(context) {
             }
             addView(row)
         }
-        val maxW = (resources.displayMetrics.widthPixels * 0.92f).toInt()
-        val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, true).apply {
-            isOutsideTouchable = true
+        val maxW = (resources.displayMetrics.widthPixels * 0.94f).toInt()
+        val pw = PopupWindow(scroll, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, false).apply {
+            isOutsideTouchable = false
+            isFocusable = false
             elevation = dp(8).toFloat()
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            width = LayoutParams.WRAP_CONTENT
         }
-        actions.forEach { (label, action) ->
+        popupActionsCache = actions
+        popupAnchor = anchor
+        val items = mutableListOf<TextView>()
+        actions.forEachIndexed { index, (label, action) ->
             val item = TextView(context).apply {
                 text = label
+                tag = index
                 setTextColor(theme.text)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
                 gravity = Gravity.CENTER
@@ -640,7 +661,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 setPadding(dp(10), dp(8), dp(10), dp(8))
                 setOnClickListener {
                     controller?.handleAction(action)
-                    if (dismissOnCommit) pw.dismiss()
+                    if (dismissOnCommit) dismissPopup() else refreshPopupHighlight(-1)
                 }
                 val lp = longPressAlternates(label)
                 if (lp.isNotEmpty()) {
@@ -650,8 +671,10 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                     }
                 }
             }
+            items.add(item)
             row.addView(item)
         }
+        popupItems = items
         popup = pw
         scroll.measure(View.MeasureSpec.makeMeasureSpec(maxW, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
         val popupW = scroll.measuredWidth.coerceAtMost(maxW)
@@ -662,9 +685,32 @@ class KeyboardView(context: Context) : LinearLayout(context) {
         pw.showAsDropDown(anchor, xOff, -anchor.height - dp(56))
     }
 
+    private fun refreshPopupHighlight(selected: Int) {
+        popupItems.forEachIndexed { i, tv ->
+            val on = i == selected
+            tv.setBackgroundColor(if (on) theme.accent else android.graphics.Color.TRANSPARENT)
+            tv.setTextColor(if (on) 0xFF10131A.toInt() else theme.text)
+        }
+    }
+
+    private fun popupIndexAt(rawX: Float, rawY: Float): Int {
+        val items = popupItems
+        for (i in items.indices) {
+            val loc = IntArray(2)
+            items[i].getLocationOnScreen(loc)
+            val l = loc[0]; val t = loc[1]
+            val r = l + items[i].width; val b = t + items[i].height
+            if (rawX >= l && rawX <= r && rawY >= t - dp(12) && rawY <= b + dp(12)) return i
+        }
+        return -1
+    }
+
     private fun dismissPopup() {
         popup?.dismiss()
         popup = null
+        popupItems = emptyList()
+        popupActionsCache = emptyList()
+        popupAnchor = null
     }
 
     private fun showKeyPreview(anchor: View, key: Key) {
