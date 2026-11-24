@@ -118,6 +118,9 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     }
 
     override fun onDetachedFromWindow() {
+        handler.removeCallbacksAndMessages(null)
+        dismissPopup()
+        dismissKeyPreview()
         prefs.unregisterListener(prefListener)
         super.onDetachedFromWindow()
     }
@@ -602,20 +605,17 @@ class KeyboardView(context: Context) : LinearLayout(context) {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     handler.removeCallbacksAndMessages(null)
                     dismissKeyPreview()
-                    if (!longPressFired) {
-                        controller?.handleAction(key.action)
-                        dismissPopup()
-                    } else if (popup != null) {
-                        val idx = popupIndexAt(event.rawX, event.rawY)
-                        if (idx >= 0 && idx < popupActionsCache.size) {
-                            controller?.handleAction(popupActionsCache[idx].second)
-                        }
-                        dismissPopup()
-                    } else if (key.longPressAction != null) {
-                        controller?.handleAction(key.longPressAction)
-                        dismissPopup()
-                    } else {
-                        dismissPopup()
+                    val wasLongPress = longPressFired
+                    val popupIdx = if (wasLongPress && popup != null) popupIndexAt(event.rawX, event.rawY) else -1
+                    val actionToFire = when {
+                        !wasLongPress -> key.action
+                        popup != null && popupIdx >= 0 && popupIdx < popupActionsCache.size -> popupActionsCache[popupIdx].second
+                        popup == null && key.longPressAction != null -> key.longPressAction
+                        else -> null
+                    }
+                    dismissPopup()
+                    if (actionToFire != null) {
+                        view.post { controller?.handleAction(actionToFire) }
                     }
                     view.performClick()
                     true
@@ -708,7 +708,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     }
 
     private fun dismissPopup() {
-        popup?.dismiss()
+        try { popup?.dismiss() } catch (_: Exception) {}
         popup = null
         popupItems = emptyList()
         popupActionsCache = emptyList()
@@ -752,7 +752,7 @@ class KeyboardView(context: Context) : LinearLayout(context) {
     }
 
     private fun dismissKeyPreview() {
-        keyPreview?.dismiss()
+        try { keyPreview?.dismiss() } catch (_: Exception) {}
         keyPreview = null
     }
 

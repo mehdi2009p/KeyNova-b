@@ -68,11 +68,17 @@ class KeyNovaImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
-        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        clipboardListener?.let { cm?.removePrimaryClipChangedListener(it) }
-        if (::controller.isInitialized) {
-            controller.stopBackspaceRepeat()
-        }
-        super.onDestroy()
+        try {
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboardListener?.let { cm?.removePrimaryClipChangedListener(it) }
+        } catch (_: Exception) {}
+        try {
+            if (::controller.isInitialized) {
+                controller.stopBackspaceRepeat()
+            }
+        } catch (_: Exception) {}
+        try {
+            super.onDestroy()
+        } catch (_: Exception) {}
     }
 }
